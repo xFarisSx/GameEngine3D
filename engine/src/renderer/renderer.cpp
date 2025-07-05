@@ -1,3 +1,4 @@
+
 #include "engine/renderer/renderer.hpp"
 #include "SDL_render.h"
 #include <iostream>
@@ -10,8 +11,8 @@
 #include <SDL2/SDL.h>
 
 namespace engine {
-
-// Constructor and destructor stay the same
+ 
+ 
 Renderer::Renderer(int width, int height, const char* title)
     : screenWidth(width), screenHeight(height) {
     if (SDL_Init(SDL_INIT_VIDEO) != 0) {
@@ -34,7 +35,7 @@ Renderer::Renderer(int width, int height, const char* title)
 
     sdlTexture = SDL_CreateTexture(sdlRenderer, SDL_PIXELFORMAT_ARGB8888,
                                    SDL_TEXTUREACCESS_STREAMING, screenWidth, screenHeight);
-
+ 
     framebuffer = new uint32_t[screenWidth * screenHeight];
     zBuffer.resize(screenWidth * screenHeight);
 }
@@ -48,6 +49,15 @@ Renderer::~Renderer() {
 }
 
 void Renderer::clear(uint32_t color) {
+    if (!framebuffer) {
+        std::cerr << "Error: framebuffer is null!" << std::endl;
+        return;
+    }
+    if (screenWidth == 0 || screenHeight == 0) {
+        std::cerr << "Error: screenWidth or screenHeight is zero!" << std::endl;
+        return;
+    }
+
     std::fill(framebuffer, framebuffer + screenWidth * screenHeight, color);
     std::fill(zBuffer.begin(), zBuffer.end(), std::numeric_limits<float>::infinity());
 }
@@ -67,7 +77,7 @@ void Renderer::handleEvents(bool& running, Controller& controller) {
     while (SDL_PollEvent(&event)) {
         if (event.type == SDL_QUIT) {
             running = false;
-        }
+                    }
         if (event.type == SDL_MOUSEBUTTONDOWN && event.button.button == SDL_BUTTON_RIGHT) {
             controller.rc = true;
         }
@@ -83,32 +93,41 @@ void Renderer::handleEvents(bool& running, Controller& controller) {
     controller.keystate = SDL_GetKeyboardState(NULL);
 }
 
-// Helper function to get camera basis vectors from rotation (pitch, yaw)
+
+
 static void updateCameraBasis(const Vec3& rotation, Vec3& forward, Vec3& right, Vec3& up, const Vec3& worldUp = Vec3(0, 1, 0)) {
     float yaw = rotation.y;
     float pitch = rotation.x;
 
-    forward.x = cosf(yaw) * cosf(pitch);
+    
+    forward.x = cosf(pitch) * sinf(yaw);
     forward.y = sinf(pitch);
-    forward.z = sinf(yaw) * cosf(pitch);
+    forward.z = cosf(pitch) * cosf(yaw);
     forward = forward.normalized();
 
-    right = forward.cross(worldUp).normalized();
-    up = right.cross(forward).normalized();
+    
+    right = worldUp.cross(forward);
+    right = right.normalized();
+
+    up = forward.cross(right);
+    up = up.normalized();
 }
 
-Vec3 Renderer::project(const Vec3& point, const TransformComponent& transform, const CameraComponent& camera) const {
-    Vec3 forward, right, up;
-    updateCameraBasis(transform.rotation, forward, right, up);
 
-    Vec3 modif = point - transform.position;
+Vec3 Renderer::project(const Vec3& point, const TransformComponent& cameraTransform, const CameraComponent& camera) const {
+    Vec3 forward, right, up;
+    updateCameraBasis(cameraTransform.rotation, forward, right, up);
+
+    Vec3 modif = point - cameraTransform.position;
     float x = modif.dot(right);
     float y = modif.dot(up);
     float z = modif.dot(forward);
     if (z <= camera.nearPlane) return Vec3(0, 0, -1);
+    //
+    float d = 1/tanf(camera.fov/2);
 
-    float px = (1 / camera.aspectRatio) * camera.fov * x / z;
-    float py = camera.fov * y / z;
+    float px = (1 / camera.aspectRatio) * d * x / z;
+    float py = d * y / z;
 
     return Vec3(screenWidth * (px + 1) / 2, screenHeight * (1 - py) / 2, z);
 }
@@ -120,14 +139,8 @@ void Renderer::drawPixel(int x, int y, float z, uint32_t color) {
             zBuffer[index] = z;
             framebuffer[index] = color;
         }
-    }
-}
-
-void Renderer::drawPoint(const Vec3& point, const TransformComponent& transform, const CameraComponent& camera) {
-    Vec3 screenPoint = project(point, transform, camera);
-    if (screenPoint.z <= camera.nearPlane) return;
-    SDL_RenderDrawPoint(sdlRenderer, static_cast<int>(screenPoint.x), static_cast<int>(screenPoint.y));
-}
+    } 
+} 
 
 float Renderer::edgeFunction(const Vec3& a, const Vec3& b, const Vec3& c) const {
     Vec3 v1 = b - a;
@@ -135,26 +148,28 @@ float Renderer::edgeFunction(const Vec3& a, const Vec3& b, const Vec3& c) const 
     return v1.x * v2.y - v1.y * v2.x;
 }
 
-void Renderer::drawTriangle(const Mesh& mesh, const Triangle& tri, const std::vector<Vec3>& vertices, const TransformComponent& transform, const CameraComponent& camera) {
-    Vec3 v0 = vertices[tri.i0] + mesh.position;
-    Vec3 v1 = vertices[tri.i1] + mesh.position;
-    Vec3 v2 = vertices[tri.i2] + mesh.position;
+
+void Renderer::drawTriangle(Mesh* mesh, const Triangle& tri, const std::vector<Vec3>& vertices,
+                            const TransformComponent& entityTransform,
+                            const TransformComponent& cameraTransform,
+                            const CameraComponent& camera) {
+    Vec3 v0 = vertices[tri.i0] + mesh->position + entityTransform.position;
+    Vec3 v1 = vertices[tri.i1] + mesh->position + entityTransform.position;
+    Vec3 v2 = vertices[tri.i2] + mesh->position + entityTransform.position;
 
     Vec3 normal = (v1 - v0).cross(v2 - v0);
-    Vec3 forward, right, up;
-    updateCameraBasis(transform.rotation, forward, right, up);
-    if (normal.dot(forward) >= 0) return;
+ 
+    Vec3 p0 = project(v0, cameraTransform, camera);
+    Vec3 p1 = project(v1, cameraTransform, camera);
+    Vec3 p2 = project(v2, cameraTransform, camera);
 
-    Vec3 p0 = project(v0, transform, camera);
-    Vec3 p1 = project(v1, transform, camera);
-    Vec3 p2 = project(v2, transform, camera);
 
-    Vec3 uv0 = mesh.textureMap[tri.uv0];
-    Vec3 uv1 = mesh.textureMap[tri.uv1];
-    Vec3 uv2 = mesh.textureMap[tri.uv2];
+    
+    Vec3 uv0 = mesh->textureMap[tri.uv0];
+    Vec3 uv1 = mesh->textureMap[tri.uv1];
+    Vec3 uv2 = mesh->textureMap[tri.uv2];
 
-    if (p0.z < camera.nearPlane || p1.z < camera.nearPlane || p2.z < camera.nearPlane)
-        return;
+    if (p0.z < camera.nearPlane || p1.z < camera.nearPlane || p2.z < camera.nearPlane) return;
 
     float minX = std::min({p0.x, p1.x, p2.x});
     float maxX = std::max({p0.x, p1.x, p2.x});
@@ -182,16 +197,13 @@ void Renderer::drawTriangle(const Mesh& mesh, const Triangle& tri, const std::ve
 
                 float depth = alpha * p0.z + beta * p1.z + gamma * p2.z;
 
-                int texX = std::clamp(static_cast<int>(u * mesh.texWidth), 0, mesh.texWidth - 1);
-                int texY = std::clamp(static_cast<int>((1.0f - v) * mesh.texHeight), 0, mesh.texHeight - 1);
+                int texX = std::clamp(static_cast<int>(u * mesh->texWidth), 0, mesh->texWidth - 1);
+                int texY = std::clamp(static_cast<int>((1.0f - v) * mesh->texHeight), 0, mesh->texHeight - 1);
 
-                int index = texY * mesh.texWidth + texX;
-                if (index < 0 || index >= static_cast<int>(mesh.texWidth * mesh.texHeight)) {
-                    std::cerr << "Texture index out of bounds: " << index << std::endl;
-                    continue;
-                }
+                int index = texY * mesh->texWidth + texX;
+                if (index < 0 || index >= static_cast<int>(mesh->texWidth * mesh->texHeight)) continue;
 
-                Uint32 baseColor = mesh.texturePixels[index];
+                Uint32 baseColor = mesh->texturePixels[index];
 
                 float intensity = std::max(0.2f, normal.normalized().dot(lightDir));
 
@@ -204,31 +216,27 @@ void Renderer::drawTriangle(const Mesh& mesh, const Triangle& tri, const std::ve
                 b = static_cast<Uint8>(b * intensity);
 
                 Uint32 color = (r << 16) | (g << 8) | b;
-
                 drawPixel(x, y, depth, color);
             }
         }
     }
 }
 
-void Renderer::renderMesh(const Mesh& mesh, const TransformComponent& transform, const CameraComponent& camera) {
+void Renderer::renderMesh(Mesh* mesh, const TransformComponent& entityTransform,
+                          const TransformComponent& cameraTransform, const CameraComponent& camera) {
+    if (!mesh) return;
+
     SDL_SetRenderDrawColor(sdlRenderer, 255, 255, 255, 255);
-    for (const Triangle& tri : mesh.triangles) {
-        drawTriangle(mesh, tri, mesh.vertices, transform, camera);
+    for (const Triangle& tri : mesh->triangles) {
+        drawTriangle(mesh, tri, mesh->vertices, entityTransform, cameraTransform, camera);
     }
 }
 
-void Renderer::renderWorld(const std::vector<Mesh>& meshes, Entity cameraEntity, World& world) {
-    // Retrieve camera components from ECS world
-    TransformComponent transform = world.getComponent<TransformComponent>(cameraEntity);
-    CameraComponent camera = world.getComponent<CameraComponent>(cameraEntity);
 
-    
-
-    for (const Mesh& mesh : meshes) {
-        renderMesh(mesh, transform, camera);
-    }
+void Renderer::renderWorld(Mesh* mesh, const TransformComponent& entityTransform,
+                           const TransformComponent& cameraTransform, const CameraComponent& camera) {
+    renderMesh(mesh, entityTransform, cameraTransform, camera);
 }
 
-} 
-
+}
+ 

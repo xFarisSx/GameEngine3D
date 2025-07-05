@@ -1,5 +1,6 @@
-#include <SDL2/SDL.h>
 #pragma once
+#include <SDL2/SDL.h>
+
 namespace engine {
 struct Controller{
   const Uint8* keystate;
@@ -12,4 +13,4 @@ struct Controller{
   
 
 };
-}
+} 

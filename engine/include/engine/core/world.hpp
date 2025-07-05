@@ -5,24 +5,29 @@
 #include <cstdint>
 
 #include <vector>
-
+ 
 
 #include "engine/ecs/component.hpp"
-
+#include "engine/ecs/system.hpp"
+#include "engine/components/script.hpp" 
 namespace engine {
+  
+  class Script;
+  using ScriptPtr = std::shared_ptr<Script>;
 
-  struct System;
-
+  
   class World{
 
     public:
-      using Entity = uint32_t;
+      using Entity = uint32_t; 
       
-
-      World();
-
-            
+ 
+             
     Entity createEntity();
+    void setCameraEntity(Entity c);
+    Entity getCamera();
+    void updateSystems(); 
+    void addSystem(std::shared_ptr<System> system);
 
     template<typename T>
     void registerComponent();
@@ -36,14 +41,39 @@ namespace engine {
     template<typename T>
     T& getComponent(Entity entity);
 
-    const std::vector<Entity>& getEntities(); 
+    void addScript(uint32_t entity, ScriptPtr script);
 
+    const std::vector<Entity>& getEntities(); 
+  
     
     private:
       std::vector<Entity> entities;
-      Entity _nextEntity = 0;
-      ComponentManager componentManager; 
+      Entity _nextEntity = 1;
+      Entity _cameraE;
+      ComponentManager componentManager;
+      SystemManager systemManager;
 
   };
 
+  template<typename T>
+  void World::registerComponent() {
+        componentManager.registerComponent<T>();
+  }
+
+  template<typename T>
+  void World::addComponent(Entity entity, const T& component) {
+    componentManager.getStorage<T>().add(entity, component);
+  }
+
+  template<typename T>
+  bool World::hasComponent(Entity entity) {
+      return componentManager.getStorage<T>().has(entity);
+  }
+
+  template<typename T>
+  T& World::getComponent(Entity entity) {
+      return componentManager.getStorage<T>().get(entity);
+  }
+
+  
 }

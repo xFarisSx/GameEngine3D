@@ -1,31 +1,40 @@
 #pragma once
 #include "engine/math/vec3.hpp"
+#include "engine/assets/mesh.hpp"
+#include "engine/components/script.hpp"
+
+#include <memory>
 
 namespace engine {
 
-  struct TransformComponent {
-      Vec3 position;
-      Vec3 rotation;
-      Vec3 scale = {1.0f, 1.0f, 1.0f};
-  };
+    struct TransformComponent {
+        Vec3 position = {0, 0, 0};
+        Vec3 rotation = {0,0,0};
+        Vec3 scale = {1.0f, 1.0f, 1.0f};
+    };
 
- struct CameraComponent {
-    Vec3 position;
-    Vec3 rotation;  // pitch, yaw, roll as (x, y, z)
-    
-    Vec3 forward;
-    Vec3 right;
-    Vec3 up;
-    Vec3 worldUp = Vec3(0, 1, 0);
-    
-    float fov;
-    float aspectRatio;
-    float nearPlane;
-    float farPlane;
-    
-    double speed;
-    double sensitivity;
-}; 
+    struct CameraComponent {
+
+        float fov=M_PI/2;
+        float aspectRatio = 16.0f/9.0f;
+        float nearPlane=0.1f;
+        float farPlane = 100.0f;
+        
+        double speed=2;
+        double sensitivity=0.01;
+    };
+
+    struct MeshComponent {
+        
+        std::shared_ptr<Mesh> mesh;
+
+    };
+
+    struct ScriptComponent {
+        ScriptPtr script;
+
+};
+
 
 }
-
+  

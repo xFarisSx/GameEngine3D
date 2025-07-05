@@ -12,11 +12,11 @@
       "-Wextra",
       "-c",
       "-o",
-      "build/engine/src/math/vec3.o",
-      "engine/src/math/vec3.cpp"
+      "build/game/src/main.o",
+      "game/src/main.cpp"
     ],
     "directory": "/run/media/faris-dev/MYDATA/All/Programming/C++/Projects/GameEngine",
-    "file": "/run/media/faris-dev/MYDATA/All/Programming/C++/Projects/GameEngine/engine/src/math/vec3.cpp",
-    "output": "/run/media/faris-dev/MYDATA/All/Programming/C++/Projects/GameEngine/build/engine/src/math/vec3.o"
+    "file": "/run/media/faris-dev/MYDATA/All/Programming/C++/Projects/GameEngine/game/src/main.cpp",
+    "output": "/run/media/faris-dev/MYDATA/All/Programming/C++/Projects/GameEngine/build/game/src/main.o"
   }
 ]

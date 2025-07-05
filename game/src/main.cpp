@@ -1,23 +1,91 @@
+
 #include <engine/engine.hpp>
+#include <iostream>
+#include <SDL2/SDL.h>
+#include <memory>
+#include <cmath>
+
+using namespace engine;
 
 
-int main(){
-    engine::Engine engine;
 
+class SimpleCameraController : public Script {
+public:
+    void start() override {
 
+    }
+
+    void update(float dt) override {
+        auto& transform = getComponent<TransformComponent>();
+        transform.position.z-=1;
+        
+    } 
+};
+
+int main() {
+    Engine engine;
     engine.init(1600, 900, "My Game");
 
     auto& world = engine.world();
+    
+    Entity test = world.createEntity();
 
-    engine::Entity cat = world.createEntity();
-    engine::TransformComponent tc{engine::Vec3(), engine::Vec3(), engine::Vec3()};
-    world.addComponent<engine::TransformComponent>(cat, tc);
-  
+    world.addComponent<TransformComponent>(test, TransformComponent{
+        Vec3(0,0,0),
+        Vec3(0,0,0),
+        Vec3(1,1,1)
+    });
+    
+    Entity cam = world.createEntity();
+    world.addComponent<TransformComponent>(cam, TransformComponent{
+        Vec3(2,4,-5),
+        Vec3(-M_PI/4,-M_PI/5,0),
+        Vec3(1,1,1)
+    });
+
+    world.addComponent<CameraComponent>(cam, CameraComponent{
+        M_PI/2,
+        16.0f/9.0f,
+        1.5f,
+        100.0f,
+        1,
+        0.01
+    });
+    world.setCameraEntity(cam);
  
+    // Create a shared pointer to a mesh
+    std::shared_ptr<Mesh> meshPtr = std::make_shared<Mesh>(Mesh::loadFromObj("assets/models/cat.obj"));
+
+    SDL_Surface* loadedSurface = SDL_LoadBMP("assets/textures/textcat1.bmp");
+    if (!loadedSurface) {
+        std::cerr << "Failed to load BMP: " << SDL_GetError() << std::endl;
+        exit(1);
+
+    } 
+
+    SDL_Surface* formattedSurface = SDL_ConvertSurfaceFormat(loadedSurface, SDL_PIXELFORMAT_ARGB8888, 0);
+    SDL_FreeSurface(loadedSurface);
+
+    if (!formattedSurface) {
+        std::cerr << "Failed to convert surface: " << SDL_GetError() << std::endl;
+        exit(1);
+    }
+
+    meshPtr->texturePixels = static_cast<Uint32*>(formattedSurface->pixels);
+    meshPtr->texWidth = formattedSurface->w;
+    meshPtr->texHeight = formattedSurface->h;
+
+    // Add MeshComponent with shared pointer
+    world.addComponent<MeshComponent>(test, MeshComponent{meshPtr});
+
+    world.addScript(test, std::make_shared<SimpleCameraController>());
+  
+
     engine.run();
     engine.shutdown();
- 
- 
+
     return 0;
-}     
-    
+}  
+
+ 
+
