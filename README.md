@@ -52,7 +52,7 @@ Deletes:
 - TransformComponent — position, rotation, scale
 - MeshComponent      — shared_ptr to mesh + texture data
 - CameraComponent    — field of view, aspect ratio, near/far planes
-- ScriptComponent    — base class for user scripts
+- ScriptComponent    — holds a shared_ptr to user scripts
 
 ---
 
@@ -67,33 +67,98 @@ Deletes:
 
 ```cpp
 #include <engine/engine.hpp>
+#include <iostream>
+#include <SDL2/SDL.h>
+#include <memory>
+#include <cmath>
+
 using namespace engine;
 
-class MyScript : public Script {
+  
+
+class SimpleCameraController : public Script {
 public:
-    TransformComponent& transform;
+
+    int speed = 1;
+    TransformComponent* transform;
+    
 
     void start() override {
-        transform = getComponent<TransformComponent>();
+        transform = &getComponent<TransformComponent>();
     }
 
     void update(float dt) override {
-        transform.position.x += 0.01f;
-    }
+         
+        
+       transform->position.x+=speed;
+   
+    } 
 };
-
+ 
 int main() {
     Engine engine;
-    engine.init(1280, 720, "My Game");
+    engine.init(1600, 900, "My Game");
 
     auto& world = engine.world();
-    Entity e = world.createEntity();
-    world.addComponent<TransformComponent>(e, TransformComponent{});
-    world.addScript(e, std::make_shared<MyScript>());
+    
+    Entity test = world.createEntity();
+
+    world.addComponent<TransformComponent>(test, TransformComponent{
+        Vec3(0,0,0),
+        Vec3(0,0,0),
+        Vec3(1,1,1)
+    });
+     
+    Entity cam = world.createEntity();
+    world.addComponent<TransformComponent>(cam, TransformComponent{
+        Vec3(2,4,-5),
+        Vec3(-M_PI/4,-M_PI/5,0),
+        Vec3(1,1,1)
+    });
+
+    world.addComponent<CameraComponent>(cam, CameraComponent{
+        M_PI/2,
+        16.0f/9.0f,
+        1.5f,
+        100.0f,
+        1,
+        0.01
+    });
+    world.setCameraEntity(cam);
+ 
+    
+    std::shared_ptr<Mesh> meshPtr = std::make_shared<Mesh>(Mesh::loadFromObj("assets/models/cat.obj"));
+
+    SDL_Surface* loadedSurface = SDL_LoadBMP("assets/textures/textcat1.bmp");
+    if (!loadedSurface) {
+        std::cerr << "Failed to load BMP: " << SDL_GetError() << std::endl;
+        exit(1);
+
+    } 
+
+    SDL_Surface* formattedSurface = SDL_ConvertSurfaceFormat(loadedSurface, SDL_PIXELFORMAT_ARGB8888, 0);
+    SDL_FreeSurface(loadedSurface);
+
+    if (!formattedSurface) {
+        std::cerr << "Failed to convert surface: " << SDL_GetError() << std::endl;
+        exit(1);
+    }
+
+    meshPtr->texturePixels = static_cast<Uint32*>(formattedSurface->pixels);
+    meshPtr->texWidth = formattedSurface->w;
+    meshPtr->texHeight = formattedSurface->h;
+
+    
+    world.addComponent<MeshComponent>(test, MeshComponent{meshPtr});
+
+    world.addScript(cam, std::make_shared<SimpleCameraController>());
+  
 
     engine.run();
     engine.shutdown();
-}
+
+    return 0;
+}  
 ```
 
 ---
