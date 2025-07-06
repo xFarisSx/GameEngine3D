@@ -63,6 +63,12 @@ Deletes:
 
 ---
 
+## Supported Model Formats
+
+- Only supports `.obj` files for now
+- Limited feature support (e.g. no normals, no materials)
+- Some `.obj` files may fail or break the loader — still experimental
+
 ## Example Usage
 
 ```cpp
