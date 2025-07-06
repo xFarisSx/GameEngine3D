@@ -1,5 +1,4 @@
-
-# Faris Engine
+# Faris Engine - (under development)
 
 A lightweight C++ game engine built with SDL2.
 Includes: ECS, camera, script system, 3D software renderer, mesh/texture support.
@@ -48,6 +47,22 @@ Deletes:
 
 ---
 
+## Available Components
+
+- TransformComponent — position, rotation, scale
+- MeshComponent      — shared_ptr to mesh + texture data
+- CameraComponent    — field of view, aspect ratio, near/far planes
+- ScriptComponent    — base class for user scripts
+
+---
+
+## Available Systems
+
+- RenderSystem — draws mesh components using camera
+- ScriptSystem — calls `start()` and `update()` on all scripts
+
+---
+
 ## Example Usage
 
 ```cpp
@@ -91,7 +106,7 @@ int main() {
 
 ## Makefile Commands
 
-    make              → build static library
-    sudo make install → install to system
+    make                → build static library
+    sudo make install   → install to system
     sudo make uninstall → remove library + headers
-    make clean        → delete build files
+    make clean          → delete build files
