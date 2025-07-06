@@ -1,49 +1,53 @@
 # Compiler and flags
-CC = g++
-CFLAGS = -std=c++17 -Wall -Iengine/include `sdl2-config --cflags`
+CXX = g++
+CXXFLAGS = -std=c++17 -Wall -Iengine/include `sdl2-config --cflags`
 LDFLAGS = `sdl2-config --libs`
 
-# Directories
-ENGINE_DIR = engine
-GAME_DIR = game
-# ========== Paths ==========
-ENGINE_INC := engine/include
-ENGINE_SRC := $(wildcard engine/src/**/*.cpp engine/src/*.cpp)
+# Directories and files
+ENGINE_INC = engine/include
+ENGINE_SRC = $(shell find engine/src -name "*.cpp")
 
-GAME_INC := game/include
-GAME_SRC := $(wildcard game/src/*.cpp)
+BUILD_DIR = build/engine
+LIB_DIR = /usr/local/lib
+INCLUDE_DIR = /usr/local/include/engine
 
-BUILD_DIR := build
-BIN := ~/CppProjectBuild/main
+# Object files for engine
+ENGINE_OBJS = $(patsubst engine/src/%.cpp, $(BUILD_DIR)/%.o, $(ENGINE_SRC))
 
-# ========== Compiler and Flags ==========
-CXX := g++
-CXXFLAGS := -std=c++17 -I$(ENGINE_INC) -I$(GAME_INC) `sdl2-config --cflags` -Wall -Wextra
-LDFLAGS := `sdl2-config --libs`
+# Static library name
+LIBNAME = libengine.a
+LIBPATH = $(BUILD_DIR)/$(LIBNAME)
 
-# ========== Object Files ==========
-OBJS := $(ENGINE_SRC:.cpp=.o) $(GAME_SRC:.cpp=.o)
-OBJS := $(patsubst %,$(BUILD_DIR)/%,$(OBJS))
+# Default target: build library
+all: $(LIBPATH)
 
-# ========== Rules ==========
-
-# Default target
-all: $(BIN)
-
-# Link final binary
-$(BIN): $(OBJS)
+# Build static library from objects
+$(LIBPATH): $(ENGINE_OBJS)
 	@mkdir -p $(dir $@)
-	$(CXX) $^ $(LDFLAGS) -o $@
-	@echo "Built: $@"
+	ar rcs $@ $^
 
-# Compile .cpp → .o
-$(BUILD_DIR)/%.o: %.cpp
+# Compile source to object
+$(BUILD_DIR)/%.o: engine/src/%.cpp
 	@mkdir -p $(dir $@)
 	$(CXX) $(CXXFLAGS) -c $< -o $@
 
+# Install library and headers to system
+install: all
+	@echo "Installing engine library and headers..."
+	@sudo mkdir -p $(LIB_DIR) $(INCLUDE_DIR)
+	@sudo cp $(LIBPATH) $(LIB_DIR)/
+	@sudo cp -r engine/include/engine/* $(INCLUDE_DIR)/
+	@echo "Installed to $(LIB_DIR) and $(INCLUDE_DIR)"
+
+uninstall:
+	@sudo rm -f $(LIB_DIR)/$(LIBNAME)
+	@sudo rm -rf $(INCLUDE_DIR)
+	@echo "Uninstalled from $(LIB_DIR) and $(INCLUDE_DIR)"
+
 # Clean build files
 clean:
-	rm -rf $(BUILD_DIR)
+	rm -rf build
 
-.PHONY: all clean
+.PHONY: all install clean
+
 

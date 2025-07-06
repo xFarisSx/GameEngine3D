@@ -28,6 +28,7 @@ namespace engine {
     Entity getCamera();
     void updateSystems(); 
     void addSystem(std::shared_ptr<System> system);
+    void startSystems();
 
     template<typename T>
     void registerComponent();

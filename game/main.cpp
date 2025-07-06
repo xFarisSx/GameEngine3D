@@ -11,14 +11,20 @@ using namespace engine;
 
 class SimpleCameraController : public Script {
 public:
-    void start() override {
 
+    int speed = 1;
+    TransformComponent* transform;
+    
+
+    void start() override {
+        transform = &getComponent<TransformComponent>();
     }
 
     void update(float dt) override {
-        auto& transform = getComponent<TransformComponent>();
-        transform.position.z-=1;
+         
         
+       transform->position.x+=speed;
+   
     } 
 };
 
@@ -53,7 +59,7 @@ int main() {
     });
     world.setCameraEntity(cam);
  
-    // Create a shared pointer to a mesh
+    
     std::shared_ptr<Mesh> meshPtr = std::make_shared<Mesh>(Mesh::loadFromObj("assets/models/cat.obj"));
 
     SDL_Surface* loadedSurface = SDL_LoadBMP("assets/textures/textcat1.bmp");
@@ -75,10 +81,10 @@ int main() {
     meshPtr->texWidth = formattedSurface->w;
     meshPtr->texHeight = formattedSurface->h;
 
-    // Add MeshComponent with shared pointer
+    
     world.addComponent<MeshComponent>(test, MeshComponent{meshPtr});
 
-    world.addScript(test, std::make_shared<SimpleCameraController>());
+    world.addScript(cam, std::make_shared<SimpleCameraController>());
   
 
     engine.run();

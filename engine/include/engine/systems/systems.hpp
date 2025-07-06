@@ -7,6 +7,8 @@ class RenderSystem : public System {
 public:
     RenderSystem(Renderer* renderer) : renderer(renderer) {}
 
+    void start(World& world) override{};
+
     void update(World& world) override;
 
 private:
@@ -15,6 +17,8 @@ private:
 
 class ScriptSystem : public System {
 
+    void start(World& world) override;
+
     void update(World& world) override;
     
     
@@ -22,4 +26,4 @@ class ScriptSystem : public System {
 };
 
 
-} 
+}  

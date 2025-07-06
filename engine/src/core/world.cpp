@@ -33,6 +33,12 @@ namespace engine {
         systemManager.updateAll(*this);
     }
 
+  void World::startSystems(){
+
+    systemManager.startAll(*this);
+
+  }
+
     void World::addSystem(std::shared_ptr<System> system) {
         systemManager.addSystem(system);
     }

@@ -30,16 +30,19 @@ void Engine::init(int width, int height, const char* title) {
     _world.addSystem(std::make_shared<ScriptSystem>(scriptSystem));
 
     
+
+    
     std::cout << "Engine initialized\n";
 }
  
 void Engine::run() {
     std::cout << "Running engine loop\n";
+    _world.startSystems();
     while (_running) {
         renderer->handleEvents(_running, controller);
         renderer->clear();
+
         _world.updateSystems();
-        
         
         renderer->present(); 
     }
