@@ -27,7 +27,7 @@ struct Mesh {
     int texWidth = 0;
     int texHeight = 0;
 
-    // Optional: destructor to free surface
+    
     ~Mesh() {
         if (textureSurface) SDL_FreeSurface(textureSurface);
     } 

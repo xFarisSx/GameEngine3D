@@ -64,5 +64,5 @@ private:
     Vec3 lightDir = Vec3(0, 0, -1).normalized();
 };
 
-} // namespace engine
+} 
 

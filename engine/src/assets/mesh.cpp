@@ -27,10 +27,9 @@ Mesh Mesh::createCube() {
 
   mesh.textureMap.resize(mesh.vertices.size());
 
-  // Set default UVs to zero or some basic mapping
+  
   for (size_t i = 0; i < mesh.textureMap.size(); ++i) {
-      mesh.textureMap[i] = Vec3(0, 0, 0); // or assign proper UV coords if you want
-  }
+      mesh.textureMap[i] = Vec3(0, 0, 0);   }
  
     return mesh;
 
