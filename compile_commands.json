@@ -118,6 +118,42 @@
       "-D_REENTRANT",
       "-c",
       "-o",
+      "build/engine/math/vec4.o",
+      "engine/src/math/vec4.cpp"
+    ],
+    "directory": "/run/media/faris-dev/MYDATA/All/Programming/C++/Projects/GameEngine",
+    "file": "/run/media/faris-dev/MYDATA/All/Programming/C++/Projects/GameEngine/engine/src/math/vec4.cpp",
+    "output": "/run/media/faris-dev/MYDATA/All/Programming/C++/Projects/GameEngine/build/engine/math/vec4.o"
+  },
+  {
+    "arguments": [
+      "/usr/bin/g++",
+      "-std=c++17",
+      "-Wall",
+      "-Iengine/include",
+      "-I/usr/include/SDL2",
+      "-D_GNU_SOURCE=1",
+      "-D_REENTRANT",
+      "-c",
+      "-o",
+      "build/engine/math/mat4.o",
+      "engine/src/math/mat4.cpp"
+    ],
+    "directory": "/run/media/faris-dev/MYDATA/All/Programming/C++/Projects/GameEngine",
+    "file": "/run/media/faris-dev/MYDATA/All/Programming/C++/Projects/GameEngine/engine/src/math/mat4.cpp",
+    "output": "/run/media/faris-dev/MYDATA/All/Programming/C++/Projects/GameEngine/build/engine/math/mat4.o"
+  },
+  {
+    "arguments": [
+      "/usr/bin/g++",
+      "-std=c++17",
+      "-Wall",
+      "-Iengine/include",
+      "-I/usr/include/SDL2",
+      "-D_GNU_SOURCE=1",
+      "-D_REENTRANT",
+      "-c",
+      "-o",
       "build/engine/renderer/renderer.o",
       "engine/src/renderer/renderer.cpp"
     ],
