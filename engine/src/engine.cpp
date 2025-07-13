@@ -2,9 +2,13 @@
 #include "engine/components/components.hpp"
 #include "engine/components/script.hpp"
 #include "engine/input/controller.hpp"
+#include "engine/input/inputManager.hpp"
 #include "engine/renderer/renderer.hpp"
 #include "engine/systems/systems.hpp"
+#include <SDL2/SDL.h>
+#include <chrono>
 #include <iostream>
+#include <memory>
 
 namespace engine {
 
@@ -13,12 +17,18 @@ Engine::Engine() {}
 Engine::~Engine() { shutdown(); }
 
 void Engine::init(int width, int height, const char *title) {
+  if (SDL_Init(SDL_INIT_VIDEO) != 0) {
+    std::cerr << "SDL_Init Error: " << SDL_GetError() << "\n";
+    exit(1);
+  }
   _world = World();
   renderer = new Renderer(width, height, title);
-  controller = Controller();
+  controller = new Controller();
+  inputManager = InputManager();
 
   _world.registerComponent<TransformComponent>();
   _world.registerComponent<CameraComponent>();
+  _world.registerComponent<CameraControllerComponent>();
   _world.registerComponent<MeshComponent>();
   _world.registerComponent<ScriptComponent>();
 
@@ -26,17 +36,30 @@ void Engine::init(int width, int height, const char *title) {
   _world.addSystem(std::make_shared<RenderSystem>(renderSystem));
   ScriptSystem scriptSystem = ScriptSystem();
   _world.addSystem(std::make_shared<ScriptSystem>(scriptSystem));
+  CameraControllerSystem cameraControllerSystem{controller};
+  _world.addSystem(
+      std::make_shared<CameraControllerSystem>(cameraControllerSystem));
 
   std::cout << "Engine initialized\n";
 }
 
 void Engine::run() {
   std::cout << "Running engine loop\n";
-  while (_running) {
-    renderer->handleEvents(_running, controller);
-    renderer->clear();
 
-    _world.updateSystems();
+  float dt = 0.0f;
+  auto lastTime = std::chrono::high_resolution_clock::now();
+  while (_running) {
+    auto now = std::chrono::high_resolution_clock::now();
+    std::chrono::duration<float> delta = now - lastTime;
+    dt = delta.count();
+    lastTime = now;
+
+    inputManager.pollEvents(_running, controller);
+    if (!_running)
+      break;
+
+    renderer->clear();
+    _world.updateSystems(dt);
 
     renderer->present();
   }
@@ -44,7 +67,10 @@ void Engine::run() {
 
 void Engine::shutdown() {
   _running = false;
-
-  std::cout << "Engine shut down\n";
+      delete controller;
+    controller = nullptr;
+    delete renderer;
+    renderer = nullptr;
+  SDL_Quit();
 }
 } // namespace engine

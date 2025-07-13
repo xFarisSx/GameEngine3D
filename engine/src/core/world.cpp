@@ -29,8 +29,8 @@ namespace engine {
     
   }
 
-  void World::updateSystems() {
-        systemManager.updateAll(*this);
+  void World::updateSystems(float dt) {
+        systemManager.updateAll(*this, dt);
     }
 
   void World::startSystems(){

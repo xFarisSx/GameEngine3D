@@ -19,9 +19,12 @@ struct CameraComponent {
   float aspectRatio = 16.0f / 9.0f;
   float nearPlane = 1.0f;
   float farPlane = 100.0f;
+};
 
-  double speed = 2;
-  double sensitivity = 0.01;
+struct CameraControllerComponent{
+  float sens = 0.5f;
+  float speed = 5.f;
+  bool active = true;
 };
 
 struct MeshComponent {

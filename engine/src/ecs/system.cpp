@@ -6,9 +6,10 @@ namespace engine {
         systems.push_back(system);
     }
 
-    void SystemManager::updateAll(World& world) {
+    void SystemManager::updateAll(World& world, float dt) {
         for (auto& system : systems) {
-            system->update(world);
+            system->update(world, dt);
+
         }
     }
 

@@ -1,16 +1,45 @@
+
 #pragma once
-#include <SDL2/SDL.h>
+#include <unordered_map>
+
 
 namespace engine {
-struct Controller{
-  const Uint8* keystate;
-  bool rc = false;
-  bool lc = false;
-  bool inmotion = false;
-  int dx = 0;
-  int dy = 0;
+enum class Key {
+    W,
+    A,
+    S,
+    D,
+    Q,
+    E,
+    Space,
+    Shift,
+    Escape};
+struct Controller {
+    // Keyboard state
+    std::unordered_map<Key, bool> keyState;
 
-  
+    // Mouse state
+    bool rightClick = false;
+    bool inMotion = false;
+    int dx = 0;
+    int dy = 0;
 
+
+    void setKeyState(Key key, bool pressed) {
+        keyState[key] = pressed;
+    }
+
+    bool isKeyPressed(Key key) const {
+        auto it = keyState.find(key);
+        return it != keyState.end() && it->second;
+    }
+
+    void resetMotion() {
+        dx = 0;
+        dy = 0;
+        inMotion = false;
+    }
 };
-} 
+
+}
+

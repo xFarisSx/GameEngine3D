@@ -22,8 +22,6 @@ public:
   void clear(uint32_t color = 0xFF000000);
   void present();
 
-  void handleEvents(bool &running, Controller &controller);
-
   Vec3 project(const Vec4 &point, const TransformComponent &cameraTransform,
                const CameraComponent &camera) const;
 

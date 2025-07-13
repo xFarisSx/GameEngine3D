@@ -1,5 +1,6 @@
 #pragma once
 #include "engine/core/world.hpp"
+#include "engine/input/inputManager.hpp"
 #include "engine/renderer/renderer.hpp"
 #include "engine/math/vec3.hpp"
 #include "engine/assets/mesh.hpp"
@@ -27,7 +28,8 @@ namespace engine{
         private:
             World _world;
             Renderer* renderer;
-            Controller controller;
+            Controller* controller = nullptr;
+            InputManager inputManager;
             bool _running = true;
 
     };

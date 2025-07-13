@@ -26,7 +26,7 @@ namespace engine {
     Entity createEntity();
     void setCameraEntity(Entity c);
     Entity getCamera();
-    void updateSystems(); 
+    void updateSystems(float dt); 
     void addSystem(std::shared_ptr<System> system);
     void startSystems();
 
@@ -41,6 +41,9 @@ namespace engine {
 
     template<typename T>
     T& getComponent(Entity entity);
+
+    template<typename... Components>
+    std::vector<Entity> view(); 
 
     void addScript(uint32_t entity, ScriptPtr script);
 
@@ -75,6 +78,17 @@ namespace engine {
   T& World::getComponent(Entity entity) {
       return componentManager.getStorage<T>().get(entity);
   }
+  template<typename... Components>
+  std::vector<Entity> World::view(){
+      std::vector<Entity> result;
+      for (Entity e : entities) {
+          if ((hasComponent<Components>(e) && ...)) {
+              result.push_back(e);
+          }
+      }
+    return result;
+    }
+
 
   
 }
