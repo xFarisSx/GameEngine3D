@@ -1,5 +1,5 @@
 #include "engine/systems/systems.hpp"
-#include "engine/assets/mesh.hpp"
+
 #include "engine/components/components.hpp"
 #include "engine/ecs/system.hpp"
 
@@ -8,7 +8,7 @@
 #include "engine/renderer/renderer.hpp"
 #include <SDL2/SDL.h>
 #include <algorithm>
-#include <iostream>
+
 namespace engine {
 using Entity = uint32_t;
 
@@ -41,7 +41,7 @@ void ScriptSystem::update(World &world, float dt) {
   for (Entity entity : entities) {
     if (world.hasComponent<ScriptComponent>(entity)) {
       auto &sc = world.getComponent<ScriptComponent>(entity);
-      sc.script->update(1);
+      sc.script->update(dt);
     }
   }
 }

@@ -9,7 +9,7 @@
 
 #include "engine/ecs/component.hpp"
 #include "engine/ecs/system.hpp"
-#include "engine/components/script.hpp" 
+
 namespace engine {
   
   class Script;
@@ -98,4 +98,4 @@ namespace engine {
 
 
   
-}
+} 

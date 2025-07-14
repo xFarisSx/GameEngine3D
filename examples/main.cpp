@@ -1,11 +1,13 @@
-#include <engine/components/components.hpp>
 #include <engine/engine.hpp>
+
 using namespace engine;
 
 class Rotator : public Script {
   TransformComponent *transform;
   void start() override { transform = &getComponent<TransformComponent>(); }
-  void update(float dt) override { transform->rotation.y += dt; }
+  void update(float dt) override { 
+
+    transform->rotation.y += dt; }
 };
 
 int main() {

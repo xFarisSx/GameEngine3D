@@ -1,14 +1,4 @@
 #include "engine/engine.hpp"
-#include "engine/components/components.hpp"
-#include "engine/components/script.hpp"
-#include "engine/input/controller.hpp"
-#include "engine/input/inputManager.hpp"
-#include "engine/renderer/renderer.hpp"
-#include "engine/systems/systems.hpp"
-#include <SDL2/SDL.h>
-#include <chrono>
-#include <iostream>
-#include <memory>
 
 namespace engine {
 
@@ -62,6 +52,7 @@ void Engine::run() {
       break;
 
     renderer->clear();
+
     _world.updateSystems(dt);
 
     renderer->present();
