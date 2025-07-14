@@ -34,7 +34,9 @@ namespace engine {
     void registerComponent();
 
     template<typename T>
-    void addComponent(Entity entity, const T& component); 
+    void addComponent(Entity entity, const T& component);
+    template<typename T>
+    void addComponent(Entity entity);
 
     template<typename T>
     bool hasComponent(Entity entity); 
@@ -67,6 +69,11 @@ namespace engine {
   template<typename T>
   void World::addComponent(Entity entity, const T& component) {
     componentManager.getStorage<T>().add(entity, component);
+  }
+
+  template<typename T>
+  void World::addComponent(Entity entity) {
+    componentManager.getStorage<T>().add(entity, T{});
   }
 
   template<typename T>

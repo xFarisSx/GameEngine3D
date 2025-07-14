@@ -5,7 +5,7 @@
 namespace engine {
 
 Vec3::Vec3() : x(0), y(0), z(0) {}
-
+Vec3::Vec3(float a) : x(a), y(a), z(a) {}
 Vec3::Vec3(float x_, float y_, float z_) : x(x_), y(y_), z(z_) {}
 
 Vec3 Vec3::operator+(const Vec3 &v) const {
