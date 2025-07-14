@@ -82,89 +82,74 @@ This makes the engine flexible for a wide variety of game mechanics beyond the b
 
 ## Example Usage
 ```cpp
+
+#include <SDL2/SDL.h>
+#include <cmath>
+#include <engine/components/components.hpp>
 #include <engine/engine.hpp>
 #include <iostream>
-#include <SDL2/SDL.h>
 #include <memory>
-#include <cmath>
 
 using namespace engine;
 
-class SimpleCameraController : public Script {
+class OBJController : public Script {
 public:
-    int speed = 1;
-    TransformComponent* transform;
+  float speed = 0.1f;
+  TransformComponent *transform;
 
-    void start() override {
-        transform = &getComponent<TransformComponent>();
-    }
+  void start() override { 
+    transform = &getComponent<TransformComponent>();
+  }
 
-    void update(float dt) override {
-        transform->position.x += speed;
-    }
+  void update(float dt) override {
+    
+    //transform->rotation.x+=speed*dt;
+
+  }
 };
-
+ 
 int main() {
-    Engine engine;
-    engine.init(1600, 900, "My Game");
+  Engine engine;
+  engine.init(1600, 900, "My Game");
 
-    auto& world = engine.world();
+  auto &world = engine.world();
 
-    Entity test = world.createEntity();
+  Entity test = world.createEntity();
 
-    world.addComponent<TransformComponent>(test, TransformComponent{
-        Vec3(0,0,0),
-        Vec3(0,0,0),
-        Vec3(1,1,1)
-    });
+  world.addComponent<TransformComponent>(
+      test, TransformComponent{Vec3(0, 0, 0), Vec3(0, 0, 0), Vec3(0.01, 0.01, 0.01)});
 
-    Entity cam = world.createEntity();
-    world.addComponent<TransformComponent>(cam, TransformComponent{
-        Vec3(2,4,-5),
-        Vec3(-M_PI/4,-M_PI/5,0),
-        Vec3(1,1,1)
-    });
+  Entity cam = world.createEntity();
+  world.addComponent<TransformComponent>(
+      cam, TransformComponent{Vec3(0, 0, -5), Vec3(0, 0, 0), Vec3(1, 1, 1)});
 
-    world.addComponent<CameraComponent>(cam, CameraComponent{
-        M_PI/2,
-        16.0f/9.0f,
-        1.5f,
-        100.0f,
-        1,
-        0.01
-    });
-    world.setCameraEntity(cam);
+  world.addComponent<CameraComponent>(
+      cam, CameraComponent{M_PI / 2, 16.0f / 9.0f, 1.f, 150.0f});
 
-    std::shared_ptr<Mesh> meshPtr = std::make_shared<Mesh>(Mesh::loadFromObj("assets/models/cat.obj"));
+  world.addComponent(cam, CameraControllerComponent{});
+  world.setCameraEntity(cam);
 
-    SDL_Surface* loadedSurface = SDL_LoadBMP("assets/textures/textcat1.bmp");
-    if (!loadedSurface) {
-        std::cerr << "Failed to load BMP: " << SDL_GetError() << std::endl;
-        exit(1);
-    }
 
-    SDL_Surface* formattedSurface = SDL_ConvertSurfaceFormat(loadedSurface, SDL_PIXELFORMAT_ARGB8888, 0);
-    SDL_FreeSurface(loadedSurface);
 
-    if (!formattedSurface) {
-        std::cerr << "Failed to convert surface: " << SDL_GetError() << std::endl;
-        exit(1);
-    }
+  std::shared_ptr<Mesh> meshPtr = Mesh::loadFromObj("assets/models/cat.obj");
 
-    meshPtr->texturePixels = static_cast<Uint32*>(formattedSurface->pixels);
-    meshPtr->texWidth = formattedSurface->w;
-    meshPtr->texHeight = formattedSurface->h;
+  std::shared_ptr<Texture> texturePtr = Texture::loadFromBmp("assets/textures/textcat1.bmp");
 
-    world.addComponent<MeshComponent>(test, MeshComponent{meshPtr});
+  MaterialComponent mat{};
+  mat.texture = texturePtr;
+  mat.useTexture = true;
 
-    world.addScript(cam, std::make_shared<SimpleCameraController>());
+  world.addComponent(test, mat);
 
-    engine.run();
-    engine.shutdown();
+  world.addComponent<MeshComponent>(test, MeshComponent{meshPtr});
 
-    return 0;
-}
-```
+  world.addScript(test, std::make_shared<OBJController>());
+
+  engine.run();
+  engine.shutdown();
+
+  return 0;
+}  ```
 ---
 
 ## Compile Your Game
