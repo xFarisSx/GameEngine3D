@@ -1,7 +1,7 @@
 # Faris Engine (WIP)
 
 A lightweight C++17 game engine using SDL2.  
-Features ECS, 3D software rendering, OBJ mesh loading, textures, and scripting.
+Features ECS, 3D software rendering, OBJ mesh loading, textures, and scripting, and a hierarchy system.
 
 ---
 
@@ -48,33 +48,38 @@ sudo make uninstall   # removes installed files
 - Software 3D rendering (OBJ, BMP)
 - Lighting & texture support
 - Scripting system (`start()` / `update()`)
+- Hierarchy system with `ParentComponent`, `ChildrenComponent`, and `GlobalTransform` to handle parent-child relationships and global matrices
 - Easy to extend with custom logic
 
 ---
 
 ## Components
 
-- `TransformComponent` — position, rotation, and scale  
-- `MeshComponent` — holds a shared mesh reference  
-- `MaterialComponent` — texture and lighting parameters  
-- `CameraComponent` — FOV, aspect ratio, near/far planes  
-- `CameraControllerComponent` — enables movement control  
-- `ScriptComponent` — attaches logic via script classes  
+- `TransformComponent` — position, rotation, and scale 
+- `GlobalTransform` — global/world matrix calculated via hierarchy system
+- `ParentComponent` — reference to parent entity
+- `ChildrenComponent` — list of child entities
+- `MeshComponent` — holds a shared mesh reference 
+- `MaterialComponent` — texture and lighting parameters 
+- `CameraComponent` — FOV, aspect ratio, near/far planes 
+- `CameraControllerComponent` — enables movement control 
+- `ScriptComponent` — attaches logic via script classes 
 
 ---
 
 ## Systems
 
-- `RenderSystem` — draws all mesh entities using the active camera  
-- `ScriptSystem` — calls `start()` once, then `update(dt)` every frame  
-- `CameraControllerSystem` — basic WASD + mouse camera movement  
+- `RenderSystem` — draws all mesh entities using the active camera 
+- `ScriptSystem` — calls `start()` once, then `update(dt)` every frame 
+- `HierarchySystem` — updates global transforms based on parent-child hierarchy
+- `CameraControllerSystem` — basic WASD + mouse camera movement 
 
 ---
 
 ## Extensibility
 
-Faris Engine allows custom components and systems.  
-You can register your own types and logic to extend behavior.  
+The engine allows custom components and systems.
+You can register your own types and logic to extend behavior.
 The engine's ECS model ensures that user-defined systems can integrate smoothly into the update loop.
 
 ---
@@ -145,10 +150,10 @@ g++ main.cpp -std=c++17 -I/usr/local/include -L/usr/local/lib -lengine `sdl2-con
 
 ## Notes
 
-- Only `.obj` files (no .mtl/normals yet)  
-- Only `.bmp` textures supported  
-- Materials include lighting factors and optional texture  
-- Software rendering only (OpenGL not yet implemented)  
-- Some OBJ files may fail — loader is experimental  
+- Only `.obj` files (no .mtl/normals yet) 
+- Only `.bmp` textures supported 
+- Materials include lighting factors and optional texture
+- Software rendering only (OpenGL not yet implemented) 
+- Some OBJ files may fail — loader is experimental 
 
 
