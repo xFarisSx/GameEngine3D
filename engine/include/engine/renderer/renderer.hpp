@@ -11,7 +11,7 @@
 #include "engine/input/controller.hpp"
 #include "engine/math/vec3.hpp"
 #include "engine/math/vec4.hpp"
-
+ 
 namespace engine {
 
 class Renderer {
@@ -22,7 +22,7 @@ public:
   void clear(uint32_t color = 0xFF000000);
   void present();
 
-  Vec3 project(const Vec4 &point, const TransformComponent &entityTransform,
+  Vec3 project(const Vec4 &point, const  Mat4 & globalMat,
                const TransformComponent &cameraTransform,
                const CameraComponent &camera) const;
 
@@ -32,11 +32,11 @@ public:
 
   void drawTriangle(const Mesh *mesh, const Triangle &tri,
                     const std::vector<Vec3> &vertices,
-                    const TransformComponent &entityTransform,
+                    const  Mat4 & globalMat,
                     const TransformComponent &cameraTransform,
                     const CameraComponent &camera, const MaterialComponent& material);
 
-  void renderMesh(const Mesh *mesh, const TransformComponent &entityTransform,
+  void renderMesh(const Mesh *mesh, const Mat4 & globalMat,
                   const TransformComponent &cameraTransform,
                   const CameraComponent &camera, const MaterialComponent& material);
 

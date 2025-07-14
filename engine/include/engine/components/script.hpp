@@ -4,11 +4,11 @@
 
 #include "engine/core/world.hpp"
 
-namespace engine {
-
+namespace engine { 
+ 
 class Script {
 protected:
-  uint32_t entityId = 0;
+  uint32_t entityId = 0;  
   World *world = nullptr;
 
 public:

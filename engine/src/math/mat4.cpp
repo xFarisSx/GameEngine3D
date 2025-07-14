@@ -1,5 +1,5 @@
 #include "engine/math/mat4.hpp"
-
+#include "engine/components/components.hpp"
 namespace engine {
 
 Mat4::Mat4() {
@@ -49,5 +49,13 @@ Mat4 Mat4::transpose() const {
 
   return nm;
 }
+
+Mat4 Mat4::modelMatrix(const TransformComponent &transform){
+    Mat4 mm = Mat4::translate(transform.position) *
+              Mat4::rotationXYZ(transform.rotation) *
+              Mat4::scale(transform.scale);
+
+    return mm;
+  }
 
 }; // namespace engine

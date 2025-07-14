@@ -75,7 +75,7 @@ void Renderer::present() {
   SDL_RenderPresent(sdlRenderer);
 }
 
-Vec3 Renderer::project(const Vec4 &point, const TransformComponent &transform,
+Vec3 Renderer::project(const Vec4 &point, const Mat4 &globalMat,
                        const TransformComponent &cameraTransform,
                        const CameraComponent &camera) const {
   Vec3 forward, right, up;
@@ -86,9 +86,7 @@ Vec3 Renderer::project(const Vec4 &point, const TransformComponent &transform,
   Mat4 perspM = Mat4::perspective(camera.fov, camera.aspectRatio,
                                   camera.nearPlane, camera.farPlane);
 
-  Mat4 modelM = Mat4::modelMatrix(transform);
-
-  Vec4 projected4 = perspM * viewM * modelM * point;
+  Vec4 projected4 = perspM * viewM * globalMat * point;
 
   if (projected4.w <= 0.0f)
     return Vec3(-1, -1, -1);
@@ -123,9 +121,10 @@ auto isValid = [](const Vec3 &v) {
 
 void Renderer::drawTriangle(const Mesh *mesh, const Triangle &tri,
                             const std::vector<Vec3> &vertices,
-                            const TransformComponent &entityTransform,
+                            const Mat4 &globalMat,
                             const TransformComponent &cameraTransform,
-                            const CameraComponent &camera, const MaterialComponent& material) {
+                            const CameraComponent &camera,
+                            const MaterialComponent &material) {
   Vec3 v0 = vertices[tri.i0];
   Vec3 v1 = vertices[tri.i1];
   Vec3 v2 = vertices[tri.i2];
@@ -134,9 +133,7 @@ void Renderer::drawTriangle(const Mesh *mesh, const Triangle &tri,
   math::updateCameraBasis(cameraTransform.rotation, forward, right, up);
 
   Vec3 normal = (v1 - v0).cross(v2 - v0);
-  Mat4 modelRotation = Mat4::rotationXYZ(entityTransform.rotation);
-  Vec3 normalViewSpace =
-      (modelRotation * Vec4(normal, 0.0f)).toVec3().normalized();
+  Vec3 normalViewSpace = (globalMat * Vec4(normal, 0.0f)).toVec3().normalized();
   if (normalViewSpace.dot(forward) > 0) {
     return;
   }
@@ -145,11 +142,11 @@ void Renderer::drawTriangle(const Mesh *mesh, const Triangle &tri,
   Vec4 v14 = Vec4(v1.x, v1.y, v1.z, 1);
   Vec4 v24 = Vec4(v2.x, v2.y, v2.z, 1);
 
-  Vec3 p0 = project(v04, entityTransform, cameraTransform, camera);
+  Vec3 p0 = project(v04, globalMat, cameraTransform, camera);
 
-  Vec3 p1 = project(v14, entityTransform, cameraTransform, camera);
+  Vec3 p1 = project(v14, globalMat, cameraTransform, camera);
 
-  Vec3 p2 = project(v24, entityTransform, cameraTransform, camera);
+  Vec3 p2 = project(v24, globalMat, cameraTransform, camera);
 
   if (p0.z < 0.0f || p0.z > 1.0f || p0.x < 0 || p0.x >= screenWidth ||
       p0.y < 0 || p0.y >= screenHeight)
@@ -165,7 +162,6 @@ void Renderer::drawTriangle(const Mesh *mesh, const Triangle &tri,
     std::cout << "Skipping triangle due to invalid projection values\n";
     return;
   }
-
 
   Vec3 uv0;
   Vec3 uv1;
@@ -208,14 +204,11 @@ void Renderer::drawTriangle(const Mesh *mesh, const Triangle &tri,
           continue;
         }
 
-        
-      Vec3 worldPos = v0 * alpha + v1 *beta + v2 * gamma;
+        Vec3 worldPos = v0 * alpha + v1 * beta + v2 * gamma;
 
+        Vec3 finalColor = material.baseColor;
 
-
-      Vec3 finalColor = material.baseColor;
-
-      if (material.useTexture && material.texture) {
+        if (material.useTexture && material.texture) {
           float u = alpha * uv0.x + beta * uv1.x + gamma * uv2.x;
           float v = alpha * uv0.y + beta * uv1.y + gamma * uv2.y;
 
@@ -226,36 +219,38 @@ void Renderer::drawTriangle(const Mesh *mesh, const Triangle &tri,
           Uint8 b = texColor & 0xFF;
 
           finalColor = Vec3(r / 255.0f, g / 255.0f, b / 255.0f);
-      }
+        }
 
+        Vec3 lightDirNormalized = lightDir.normalized();
+        Vec3 normalNormalized = normal.normalized();
 
-      Vec3 lightDirNormalized = lightDir.normalized();
-      Vec3 normalNormalized = normal.normalized();
+        float diffIntensity = std::max(
+            material.ambient, normalNormalized.dot(lightDirNormalized * -1));
 
-      float diffIntensity = std::max(material.ambient, normalNormalized.dot(lightDirNormalized*-1));
+        Vec3 viewDir = (cameraTransform.position - worldPos).normalized();
+        Vec3 reflectDir = reflect(lightDirNormalized, normalNormalized);
 
-      Vec3 viewDir = (cameraTransform.position - worldPos).normalized();
-      Vec3 reflectDir = reflect(lightDirNormalized, normalNormalized);
+        float spec =
+            pow(std::max(0.0f, viewDir.dot(reflectDir)), material.shininess);
+        float totalLight = diffIntensity + material.specular * spec;
 
-      float spec = pow(std::max(0.0f, viewDir.dot(reflectDir)), material.shininess);
-      float totalLight = diffIntensity + material.specular * spec;
+        Vec3 litColor = finalColor * totalLight;
 
+        Uint8 r =
+            static_cast<Uint8>(std::clamp(litColor.x * 255.0f, 0.0f, 255.0f));
+        Uint8 g =
+            static_cast<Uint8>(std::clamp(litColor.y * 255.0f, 0.0f, 255.0f));
+        Uint8 b =
+            static_cast<Uint8>(std::clamp(litColor.z * 255.0f, 0.0f, 255.0f));
 
-      Vec3 litColor = finalColor * totalLight;
-
-      Uint8 r = static_cast<Uint8>(std::clamp(litColor.x * 255.0f, 0.0f, 255.0f));
-      Uint8 g = static_cast<Uint8>(std::clamp(litColor.y * 255.0f, 0.0f, 255.0f));
-      Uint8 b = static_cast<Uint8>(std::clamp(litColor.z * 255.0f, 0.0f, 255.0f));
-
-      Uint32 color = (r << 16) | (g << 8) | b;
-      drawPixel(x, y, depth, color);
-
+        Uint32 color = (r << 16) | (g << 8) | b;
+        drawPixel(x, y, depth, color);
       }
     }
   }
 }
 
-void Renderer::renderMesh(const Mesh *mesh, const TransformComponent &entityTransform,
+void Renderer::renderMesh(const Mesh *mesh, const Mat4 &globalMat,
                           const TransformComponent &cameraTransform,
                           const CameraComponent &camera,
                           const MaterialComponent &material) {
@@ -266,8 +261,8 @@ void Renderer::renderMesh(const Mesh *mesh, const TransformComponent &entityTran
 
   SDL_SetRenderDrawColor(sdlRenderer, 255, 255, 255, 255);
   for (const Triangle &tri : mesh->triangles) {
-    drawTriangle(mesh, tri, mesh->vertices, entityTransform, cameraTransform,
-                 camera, material);
+    drawTriangle(mesh, tri, mesh->vertices, globalMat, cameraTransform, camera,
+                 material);
   }
 }
 //

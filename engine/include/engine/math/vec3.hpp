@@ -13,6 +13,8 @@ struct Vec3 {
   Vec3 operator+(const Vec3 &v) const;
   Vec3 operator-(const Vec3 &v) const;
   Vec3 operator*(float s) const;
+  float &operator[](int col);
+  const float &operator[](int index) const;
 
   float dot(const Vec3 &v) const;
   Vec3 cross(const Vec3 &v) const;

@@ -1,1 +1,20 @@
-[]
+[
+  {
+    "arguments": [
+      "/usr/bin/g++",
+      "-std=c++17",
+      "-Wall",
+      "-Iengine/include",
+      "-I/usr/include/SDL2",
+      "-D_GNU_SOURCE=1",
+      "-D_REENTRANT",
+      "-c",
+      "-o",
+      "build/engine/systems/systems.o",
+      "engine/src/systems/systems.cpp"
+    ],
+    "directory": "/run/media/faris-dev/MYDATA/All/Programming/C++/Projects/GameEngine",
+    "file": "/run/media/faris-dev/MYDATA/All/Programming/C++/Projects/GameEngine/engine/src/systems/systems.cpp",
+    "output": "/run/media/faris-dev/MYDATA/All/Programming/C++/Projects/GameEngine/build/engine/systems/systems.o"
+  }
+]

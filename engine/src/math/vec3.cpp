@@ -1,7 +1,7 @@
 
 #include "engine/math/vec3.hpp"
 #include <cmath>
-
+#include <stdexcept>
 namespace engine {
 
 Vec3::Vec3() : x(0), y(0), z(0) {}
@@ -32,4 +32,30 @@ Vec3 Vec3::normalized() const {
     return Vec3(0, 0, 0);
   return Vec3(x / len, y / len, z / len);
 }
+
+float &Vec3::operator[](int col) {
+  switch (col) {
+  case 0:
+    return x;
+  case 1:
+    return y;
+  case 2:
+    return z;
+  default:
+    throw std::out_of_range("Vec3 index out of range");
+  }
+}
+const float &Vec3::operator[](int index) const {
+  switch (index) {
+  case 0:
+    return x;
+  case 1:
+    return y;
+  case 2:
+    return z;
+  default:
+    throw std::out_of_range("Vec3 index out of range");
+  }
+}
+
 } // namespace engine

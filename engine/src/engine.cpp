@@ -1,4 +1,6 @@
 #include "engine/engine.hpp"
+#include "engine/components/components.hpp"
+#include "engine/systems/systems.hpp"
 
 namespace engine {
 
@@ -17,20 +19,24 @@ void Engine::init(int width, int height, const char *title) {
   inputManager = InputManager();
 
   _world.registerComponent<TransformComponent>();
+  _world.registerComponent<GlobalTransform>();
   _world.registerComponent<CameraComponent>();
   _world.registerComponent<CameraControllerComponent>();
   _world.registerComponent<MeshComponent>();
   _world.registerComponent<ScriptComponent>();
   _world.registerComponent<MaterialComponent>();
+  _world.registerComponent<ParentComponent>();
+  _world.registerComponent<ChildrenComponent>();
 
-  RenderSystem renderSystem = RenderSystem(renderer);
-  _world.addSystem(std::make_shared<RenderSystem>(renderSystem));
-  ScriptSystem scriptSystem = ScriptSystem();
-  _world.addSystem(std::make_shared<ScriptSystem>(scriptSystem));
+
+  _world.addSystem(std::make_shared<RenderSystem>(renderer));
+  _world.addSystem(std::make_shared<ScriptSystem>());
   CameraControllerSystem cameraControllerSystem{controller};
   _world.addSystem(
       std::make_shared<CameraControllerSystem>(cameraControllerSystem));
+  _world.addSystem(std::make_shared<HierarchySystem>());
 
+ 
   std::cout << "Engine initialized\n";
 }
 

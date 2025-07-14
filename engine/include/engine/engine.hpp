@@ -22,7 +22,7 @@ class Engine {
 public:
   Engine();
   ~Engine();
-
+ 
   void init(int width, int height, const char *title);
   void run();
   void shutdown();

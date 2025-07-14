@@ -1,9 +1,10 @@
 #pragma once
-#include "engine/components/components.hpp"
+
 #include "engine/math/vec4.hpp"
 #include <cmath>
-
+  
 namespace engine {
+struct TransformComponent;
 struct Mat4 {
   float m[4][4]; // column-major: m[column][row]
 
@@ -78,13 +79,7 @@ struct Mat4 {
     return rotateZ(r.z) * rotateY(r.y) * rotateX(r.x);
   }
 
-  static Mat4 modelMatrix(const TransformComponent &transform) {
-    Mat4 mm = Mat4::translate(transform.position) *
-              Mat4::rotationXYZ(transform.rotation) *
-              Mat4::scale(transform.scale);
-
-    return mm;
-  }
+  static Mat4 modelMatrix(const TransformComponent &transform); 
 
   static Mat4 perspective(float fov, float aspect, float near, float far) {
     Mat4 pm{};

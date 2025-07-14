@@ -23,9 +23,19 @@ class ScriptSystem : public System {
 
     void update(World& world,float  dt) override;
     
-    
+     
 
 }; 
+
+class HierarchySystem : public System {
+
+    void start(World& world) override{};
+
+    void update(World& world,float  dt) override;
+    
+    
+
+};
  
 class CameraControllerSystem : public System{
   public:
