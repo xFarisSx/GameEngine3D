@@ -2,6 +2,7 @@
 #include "engine/assets/mesh.hpp"
 #include "engine/components/script.hpp"
 #include "engine/math/vec3.hpp"
+#include "engine/assets/texture.hpp"
 
 #include <memory>
 
@@ -31,6 +32,17 @@ struct MeshComponent {
 
   std::shared_ptr<Mesh> mesh;
 };
+
+struct MaterialComponent {
+    Vec3 baseColor = Vec3(1.0f, 1.0f, 1.0f);    // Base color (used if no texture)
+    float ambient = 0.1f;                
+    float specular = 0.5f;               
+    float shininess = 32.0f;             
+    std::shared_ptr<Texture> texture;    
+
+    bool useTexture = false;           
+};
+
 
 struct ScriptComponent {
   ScriptPtr script;

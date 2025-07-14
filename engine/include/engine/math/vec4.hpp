@@ -9,6 +9,7 @@ struct Vec4 {
 
   Vec4();
   Vec4(float x_, float y_, float z_, float w_ = 1.0f);
+  Vec4(Vec3 v3, float w=0);
 
   float &operator[](int col);
   const float &operator[](int index) const;

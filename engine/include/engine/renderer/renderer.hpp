@@ -22,30 +22,31 @@ public:
   void clear(uint32_t color = 0xFF000000);
   void present();
 
-  Vec3 project(const Vec4 &point, const TransformComponent &cameraTransform,
+  Vec3 project(const Vec4 &point, const TransformComponent &entityTransform,
+               const TransformComponent &cameraTransform,
                const CameraComponent &camera) const;
 
   void drawPixel(int x, int y, float z, uint32_t color);
 
   float edgeFunction(const Vec3 &a, const Vec3 &b, const Vec3 &c) const;
 
-  void drawTriangle(Mesh *mesh, const Triangle &tri,
+  void drawTriangle(const Mesh *mesh, const Triangle &tri,
                     const std::vector<Vec3> &vertices,
                     const TransformComponent &entityTransform,
                     const TransformComponent &cameraTransform,
-                    const CameraComponent &camera);
+                    const CameraComponent &camera, const MaterialComponent& material);
 
-  void renderMesh(Mesh *mesh, const TransformComponent &entityTransform,
+  void renderMesh(const Mesh *mesh, const TransformComponent &entityTransform,
                   const TransformComponent &cameraTransform,
-                  const CameraComponent &camera);
+                  const CameraComponent &camera, const MaterialComponent& material);
 
   void renderWorld(Mesh *mesh, const TransformComponent &entityTransform,
                    const TransformComponent &cameraTransform,
                    const CameraComponent &camera);
-
-private:
+  Vec3 reflect(const Vec3& L, const Vec3& N) ;
+  private:
   SDL_Window *window = nullptr;
-  SDL_Renderer *sdlRenderer = nullptr;
+  SDL_Renderer *sdlRenderer = nullptr; 
   SDL_Texture *sdlTexture = nullptr;
 
   int screenWidth = 0;

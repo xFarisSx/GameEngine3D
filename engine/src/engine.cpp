@@ -31,6 +31,7 @@ void Engine::init(int width, int height, const char *title) {
   _world.registerComponent<CameraControllerComponent>();
   _world.registerComponent<MeshComponent>();
   _world.registerComponent<ScriptComponent>();
+  _world.registerComponent<MaterialComponent>();
 
   RenderSystem renderSystem = RenderSystem(renderer);
   _world.addSystem(std::make_shared<RenderSystem>(renderSystem));
@@ -45,6 +46,8 @@ void Engine::init(int width, int height, const char *title) {
 
 void Engine::run() {
   std::cout << "Running engine loop\n";
+
+  _world.startSystems();
 
   float dt = 0.0f;
   auto lastTime = std::chrono::high_resolution_clock::now();
@@ -67,10 +70,10 @@ void Engine::run() {
 
 void Engine::shutdown() {
   _running = false;
-      delete controller;
-    controller = nullptr;
-    delete renderer;
-    renderer = nullptr;
+  delete controller;
+  controller = nullptr;
+  delete renderer;
+  renderer = nullptr;
   SDL_Quit();
 }
 } // namespace engine

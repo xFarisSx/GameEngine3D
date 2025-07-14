@@ -11,30 +11,30 @@
 #include <iostream>
 namespace engine {
 using Entity = uint32_t;
+
 void RenderSystem::update(World &world, float dt) {
   const auto &entities = world.getEntities();
 
   Entity cameraEntity = world.getCamera();
-  if (!cameraEntity)
-    return;
+  if (!cameraEntity) return;
 
   auto &cameraTransform = world.getComponent<TransformComponent>(cameraEntity);
   auto &camera = world.getComponent<CameraComponent>(cameraEntity);
+
   for (Entity entity : entities) {
     if (world.hasComponent<TransformComponent>(entity) &&
-        world.hasComponent<MeshComponent>(entity)) {
+        world.hasComponent<MeshComponent>(entity) && world.hasComponent<MaterialComponent>(entity)) {
 
       auto &transform = world.getComponent<TransformComponent>(entity);
       auto &meshC = world.getComponent<MeshComponent>(entity);
+      if (!meshC.mesh) continue;
+      auto &material = world.getComponent<MaterialComponent>(entity);
 
-      if (!meshC.mesh)
-        continue;
-
-      renderer->renderMesh(meshC.mesh.get(), transform, cameraTransform,
-                           camera);
+      renderer->renderMesh(meshC.mesh.get(), transform, cameraTransform, camera, material);
     }
   }
 }
+
 
 void ScriptSystem::update(World &world, float dt) {
   const auto &entities = world.getEntities();

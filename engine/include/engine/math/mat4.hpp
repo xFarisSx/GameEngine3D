@@ -1,4 +1,5 @@
 #pragma once
+#include "engine/components/components.hpp"
 #include "engine/math/vec4.hpp"
 #include <cmath>
 
@@ -73,6 +74,18 @@ struct Mat4 {
     return rz;
   }
 
+  static Mat4 rotationXYZ(Vec3 r) {
+    return rotateZ(r.z) * rotateY(r.y) * rotateX(r.x);
+  }
+
+  static Mat4 modelMatrix(const TransformComponent &transform) {
+    Mat4 mm = Mat4::translate(transform.position) *
+              Mat4::rotationXYZ(transform.rotation) *
+              Mat4::scale(transform.scale);
+
+    return mm;
+  }
+
   static Mat4 perspective(float fov, float aspect, float near, float far) {
     Mat4 pm{};
 
@@ -93,7 +106,7 @@ struct Mat4 {
     return pm;
   }
   static Mat4 lookAt(const Vec3 &eye, const Vec3 &target, const Vec3 &rup) {
-    Vec3 forward = (target - eye).normalized()*-1;
+    Vec3 forward = (target - eye).normalized() * -1;
     Vec3 right = forward.cross(rup).normalized();
     Vec3 up = right.cross(forward).normalized();
 
