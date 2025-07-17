@@ -1,12 +1,12 @@
 #include "engine/systems/systems.hpp"
 
 #include "engine/components/components.hpp"
-#include "engine/components/script.hpp"
 #include "engine/core/world.hpp"
 #include "engine/ecs/system.hpp"
 #include "engine/math/general.hpp"
 #include "engine/math/mat4.hpp"
 #include "engine/renderer/renderer.hpp"
+#include "engine/script/script.hpp"
 #include <SDL2/SDL.h>
 #include <algorithm>
 #include <iostream>
@@ -17,11 +17,13 @@ void RenderSystem::update(World &world, float dt) {
   const auto &entities = world.getEntities();
 
   Entity cameraEntity = world.getCamera();
-  if (!cameraEntity)
+
+  if (!cameraEntity || cameraEntity <= 0)
     return;
 
   auto &cameraGM =
       world.getComponent<GlobalTransform>(cameraEntity).worldMatrix;
+
   auto &camera = world.getComponent<CameraComponent>(cameraEntity);
 
   TransformComponent cameraGlobalT = math::transformFromMatrix(cameraGM);

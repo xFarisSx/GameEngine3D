@@ -1,7 +1,7 @@
 #pragma once
 #include "engine/assets/mesh.hpp"
 #include "engine/components/components.hpp"
-#include "engine/components/script.hpp"
+#include "engine/script/script.hpp"
 #include "engine/core/world.hpp"
 #include "engine/ecs/component.hpp"
 #include "engine/ecs/system.hpp"
@@ -22,7 +22,7 @@ class Engine {
 public:
   Engine();
   ~Engine();
- 
+  
   void init(int width, int height, const char *title);
   void run();
   void shutdown();

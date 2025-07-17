@@ -9,7 +9,8 @@
 #include "engine/components/components.hpp"
 #include "engine/ecs/component.hpp"
 #include "engine/ecs/system.hpp"
-
+#include "engine/script/scriptRegistry.hpp"
+ 
 namespace engine {
 
 class Script;
@@ -33,7 +34,17 @@ public:
   void removeAllChildren(Entity parent);
   std::vector<Entity> getChildren(Entity parent);
 
-  template <typename T> void registerComponent();
+  void registerDefaults();
+  void clearStorages();
+ 
+  template <typename T>
+  void registerComponent(
+      const std::string &name, std::function<json(World &, Entity)> to_json,
+      std::function<void(World &, Entity, const json &)> from_json);
+
+  const std::unordered_map<std::string, ComponentSerializer> &getSerializers();
+  void loadScene(const std::string &filepath);
+  void saveScene(const std::string &filepath);
 
   template <typename T> void addComponent(Entity entity, const T &component);
   template <typename T> void addComponent(Entity entity);
@@ -48,18 +59,31 @@ public:
 
   void addScript(uint32_t entity, ScriptPtr script);
 
+  template <typename T>
+  void registerScript(std::string name );
+
   const std::vector<Entity> &getEntities();
 
 private:
   std::vector<Entity> entities;
   Entity _nextEntity = 1;
-  Entity _cameraE;
+  Entity _cameraE = 0;
   ComponentManager componentManager;
   SystemManager systemManager;
+  ScriptRegistry scriptRegistry;
 };
 
-template <typename T> void World::registerComponent() {
-  componentManager.registerComponent<T>();
+template <typename T>
+void World::registerScript(std::string name){
+  scriptRegistry.registerScript<T>(name);
+}
+
+
+template <typename T>
+void World::registerComponent(
+    const std::string &name, std::function<json(World &, Entity)> to_json,
+    std::function<void(World &, Entity, const json &)> from_json) {
+  componentManager.registerComponent<T>(name, to_json, from_json);
 }
 
 template <typename T>
@@ -68,8 +92,9 @@ void World::addComponent(Entity entity, const T &component) {
 }
 
 template <>
-inline void World::addComponent<TransformComponent>(
-    Entity e, const TransformComponent &transform) {
+inline void
+World::addComponent<TransformComponent>(Entity e,
+                                        const TransformComponent &transform) {
   componentManager.getStorage<TransformComponent>().add(e, transform);
 
   if (!hasComponent<GlobalTransform>(e)) {

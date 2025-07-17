@@ -16,6 +16,8 @@ struct Mesh {
   std::vector<Vec3> vertices;
   std::vector<Triangle> triangles;
   std::vector<Vec3> textureMap;
+  std::string path;
+  std::string type;
 
   static std::shared_ptr<Mesh> createCube();
   static std::shared_ptr<Mesh> loadFromObj(const std::string &filename);

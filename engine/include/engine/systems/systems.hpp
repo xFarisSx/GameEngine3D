@@ -22,8 +22,8 @@ class ScriptSystem : public System {
     void start(World& world) override;
 
     void update(World& world,float  dt) override;
-    
-     
+
+  
 
 }; 
 

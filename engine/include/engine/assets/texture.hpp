@@ -8,7 +8,7 @@
 namespace engine {
 
 struct Texture {
-  std::string textureFileName;
+  std::string path;
 
   SDL_Surface *textureSurface = nullptr;
   Uint32 *texturePixels = nullptr;

@@ -9,6 +9,9 @@ namespace engine{
   
   std::shared_ptr<Texture> Texture::loadFromBmp(const std::string &filename){
     auto texture = std::make_shared<Texture>();
+  
+    texture->path = filename;
+
     SDL_Surface *loadedSurface = SDL_LoadBMP(filename.c_str());
     if (!loadedSurface) {
       std::cerr << "Failed to load BMP: " << SDL_GetError() << std::endl;

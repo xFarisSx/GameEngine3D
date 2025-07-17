@@ -56,6 +56,7 @@ std::shared_ptr<Mesh> Mesh::createCube() {
 
 std::shared_ptr<Mesh> Mesh::loadFromObj(const std::string &filename) {
   auto mesh = std::make_shared<Mesh>();
+  mesh->path = filename;
   std::ifstream file(filename);
 
   if (!file.is_open()) {

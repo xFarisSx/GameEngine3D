@@ -10,11 +10,11 @@
       "-D_REENTRANT",
       "-c",
       "-o",
-      "build/engine/systems/systems.o",
-      "engine/src/systems/systems.cpp"
+      "build/engine/serialization/serializer.o",
+      "engine/src/serialization/serializer.cpp"
     ],
     "directory": "/run/media/faris-dev/MYDATA/All/Programming/C++/Projects/GameEngine",
-    "file": "/run/media/faris-dev/MYDATA/All/Programming/C++/Projects/GameEngine/engine/src/systems/systems.cpp",
-    "output": "/run/media/faris-dev/MYDATA/All/Programming/C++/Projects/GameEngine/build/engine/systems/systems.o"
+    "file": "/run/media/faris-dev/MYDATA/All/Programming/C++/Projects/GameEngine/engine/src/serialization/serializer.cpp",
+    "output": "/run/media/faris-dev/MYDATA/All/Programming/C++/Projects/GameEngine/build/engine/serialization/serializer.o"
   }
 ]

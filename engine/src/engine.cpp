@@ -18,25 +18,18 @@ void Engine::init(int width, int height, const char *title) {
   controller = new Controller();
   inputManager = InputManager();
 
-  _world.registerComponent<TransformComponent>();
-  _world.registerComponent<GlobalTransform>();
-  _world.registerComponent<CameraComponent>();
-  _world.registerComponent<CameraControllerComponent>();
-  _world.registerComponent<MeshComponent>();
-  _world.registerComponent<ScriptComponent>();
-  _world.registerComponent<MaterialComponent>();
-  _world.registerComponent<ParentComponent>();
-  _world.registerComponent<ChildrenComponent>();
-
+ 
+  _world.registerDefaults(); 
 
   _world.addSystem(std::make_shared<RenderSystem>(renderer));
   _world.addSystem(std::make_shared<ScriptSystem>());
   CameraControllerSystem cameraControllerSystem{controller};
   _world.addSystem(
-      std::make_shared<CameraControllerSystem>(cameraControllerSystem));
+    std::make_shared<CameraControllerSystem>(cameraControllerSystem));
   _world.addSystem(std::make_shared<HierarchySystem>());
-
  
+  
+
   std::cout << "Engine initialized\n";
 }
 
