@@ -83,10 +83,10 @@ sudo make uninstall   # removes installed files
 The engine allows custom components and systems.
 You can register your own types and logic to extend behavior.
 The engine's ECS model ensures that user-defined systems can integrate smoothly into the update loop.
-You can define custom:
-    -Components (docs/components.md)
-    -Systems (that iterate over ECS components)(docs/systems.md)
-    -Scripts (by inheriting from Script)
+- [Components](docs/components.md)
+> ℹ️ **Note:** When registering a component, you must provide a serializer and deserializer using `registerComponent`. See the components guide for examples.
+- [Systems](docs/systems.md) (that iterate over ECS components)
+- [Scripts](docs/scripts.md) (by inheriting from `Script`)
 
 ---
 
