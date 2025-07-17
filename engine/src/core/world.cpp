@@ -14,10 +14,10 @@ Entity World::createEntity() {
   entities.push_back(id);
   return id;
 }
-void World::clearStorages(){
+void World::clearStorages() {
   componentManager.clearStorages();
-  entities.clear(); 
-  _nextEntity = 1; 
+  entities.clear();
+  _nextEntity = 1;
 }
 void World::setCameraEntity(Entity c) { _cameraE = c; }
 
@@ -189,8 +189,7 @@ void World::registerDefaults() {
       [](World &world, Entity e, const json &j) {
         MeshComponent comp;
         std::string path = j.at("mesh").get<std::string>();
-        comp.mesh =
-            Mesh::loadFromObj(path); 
+        comp.mesh = Mesh::loadFromObj(path);
         world.addComponent<MeshComponent>(e, comp);
       });
 
@@ -214,8 +213,7 @@ void World::registerDefaults() {
         comp.useTexture = j.at("useTexture").get<bool>();
         std::string path = j.at("texture").get<std::string>();
         if (!path.empty()) {
-          comp.texture =
-              Texture::loadFromBmp(path); // assumes static load(path) method
+          comp.texture = Texture::loadFromBmp(path);
         }
         world.addComponent<MaterialComponent>(e, comp);
       });
@@ -227,7 +225,7 @@ void World::registerDefaults() {
         const auto &comp = world.getComponent<ScriptComponent>(e);
         return {{"script", comp.script ? comp.script->name : ""}};
       },
- 
+
       [](World &world, Entity e, const json &j) {
         ScriptComponent comp;
         std::string name = j.at("script").get<std::string>();
@@ -239,8 +237,6 @@ void World::registerDefaults() {
           }
           world.addScript(e, world.scriptRegistry.create(name));
         }
-
-        
       });
 
   registerComponent<ParentComponent>(
