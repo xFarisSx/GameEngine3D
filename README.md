@@ -1,7 +1,7 @@
 # Faris Engine (WIP)
 
 A lightweight C++17 game engine using SDL2.  
-Features ECS, 3D software rendering, OBJ mesh loading, textures, and scripting, and a hierarchy system.
+Features ECS, 3D software rendering, OBJ mesh loading, textures, scripting, and a hierarchy system.
 
 ---
 
@@ -28,7 +28,7 @@ sudo apt install libsdl2-dev
 make
 ```
 
-Outputs:  
+Outputs: 
 - `build/engine/libengine.a`
 
 ---
@@ -48,9 +48,10 @@ sudo make uninstall   # removes installed files
 - Software 3D rendering (OBJ, BMP)
 - Lighting & texture support
 - Scripting system (`start()` / `update()`)
+- GameObject wrapper for convenient entity & component access
 - Hierarchy system with `ParentComponent`, `ChildrenComponent`, and `GlobalTransform` to handle parent-child relationships and global matrices
-- Easy to extend with custom logic
-- Scene serialization and deserialization (JSON)
+- Easy extension with user-defined components, systems, and scripts
+- Scene save/load using JSON serialization
 - Component registration and storage management
 
 ---
@@ -64,7 +65,7 @@ sudo make uninstall   # removes installed files
 - `MeshComponent` — holds a shared mesh reference 
 - `MaterialComponent` — texture and lighting parameters 
 - `CameraComponent` — FOV, aspect ratio, near/far planes 
-- `CameraControllerComponent` — enables movement control 
+- `CameraControllerComponent` — WASD QE and mouse. Enables movement control 
 - `ScriptComponent` — attaches logic via script classes 
 
 ---
@@ -94,11 +95,8 @@ The engine's ECS model ensures that user-defined systems can integrate smoothly 
 
 ```cpp
 #include <engine/engine.hpp>
-#include <iostream>
-
 using namespace engine;
 
-// Example Script: Rotator
 class Rotator : public Script {
   TransformComponent* transform = nullptr;
   EngineContext* ctx = nullptr;
@@ -107,56 +105,43 @@ public:
   Rotator() : Script("Rotator") {}
 
   void start() override {
-    // Get the GameObject wrapper for this script's entity
     GameObject obj = getGameObject();
     transform = &obj.getComponent<TransformComponent>();
-
-    // Get the engine context (for input, etc)
     ctx = world->getContext();
   }
 
   void update(float dt) override {
     if (ctx && ctx->controller->isKeyPressed(Key::Escape)) {
-      // Rotate around Y axis continuously while Escape key is pressed
       transform->rotation.y += dt;
     }
   }
 };
 
-// Setup scene manually
 void setupScene(World& world) {
-  // Create a box GameObject
   GameObject box(world);
   box.getComponent<TransformComponent>().position = Vec3(4, 2, 1);
   box.setMesh(Mesh::createBox(1.0, 2.0, 1.0));
+  MaterialComponent mat;
+  mat.useTexture = false;
+  box.setMaterial(mat);
 
-  MaterialComponent boxMaterial;
-  boxMaterial.useTexture = false;
-  box.setMaterial(boxMaterial);
-
-  // Create a camera GameObject
   GameObject camera(world);
   auto& camTransform = camera.getComponent<TransformComponent>();
   camTransform.position = Vec3(0, 0, -5);
   camTransform.scale = Vec3(100.0f);
-
   camera.addComponent(CameraComponent{M_PI / 2, 16.f / 9.f, 1.0f, 30.f});
   camera.addComponent(CameraControllerComponent{});
   world.setCameraEntity(camera.getEntity());
 
-  // Create a 3D model GameObject
   GameObject model(world);
   model.getComponent<TransformComponent>().scale = Vec3(0.01f);
   model.setMesh(Mesh::loadFromObj("assets/models/cat.obj"));
-
   MaterialComponent modelMat;
   modelMat.texture = Texture::loadFromBmp("assets/textures/textcat1.bmp");
   modelMat.useTexture = true;
   model.setMaterial(modelMat);
-
   model.addScript(std::make_shared<Rotator>());
 
-  // Create a sphere GameObject with default material
   GameObject sphere(world);
   sphere.setMesh(Mesh::createSphere(1, 16, 32));
   sphere.setMaterial(MaterialComponent{});
@@ -167,14 +152,12 @@ int main() {
   engine.init(1600, 900, "My Game");
 
   auto& world = engine.world();
-
-  // Register scripts
   world.registerScript<Rotator>("Rotator");
 
-  // Option 1: Setup scene programmatically
+  // Optionally setup scene programmatically:
   // setupScene(world);
 
-  // Option 2: Load scene from JSON file
+  // Or load scene from JSON:
   world.loadScene("scenes/test.json");
 
   engine.run();
@@ -182,7 +165,6 @@ int main() {
 
   return 0;
 }
-
 ```
 
 ---
@@ -209,7 +191,8 @@ g++ main.cpp -std=c++17 -I/usr/local/include -L/usr/local/lib -lengine `sdl2-con
 - Only `.obj` files (no .mtl/normals yet) 
 - Only `.bmp` textures supported 
 - Materials include lighting factors and optional texture
-- Software rendering only (OpenGL not yet implemented) 
+- Lighting uses simple ambient, diffuse, specular components
+- Software rendering only (OpenGL planned) 
 - Some OBJ files may fail — loader is experimental 
 
 
