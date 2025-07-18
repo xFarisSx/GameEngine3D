@@ -44,7 +44,18 @@
           "useTexture": false
         },
         "MeshComponent": {
-          "mesh": ""
+          "mesh": "",
+          "size": {
+            "x": 1.0,
+            "y": 2.0,
+            "z": 1.0
+          },
+          "sphereData": {
+            "x": 1.0,
+            "y": 16.0,
+            "z": 32.0
+          },
+          "type": "Box"
         },
         "TransformComponent": {
           "position": {
@@ -170,7 +181,18 @@
           "useTexture": true
         },
         "MeshComponent": {
-          "mesh": "assets/models/cat.obj"
+          "mesh": "assets/models/cat.obj",
+          "size": {
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
+          },
+          "sphereData": {
+            "x": 1.0,
+            "y": 16.0,
+            "z": 32.0
+          },
+          "type": "Obj"
         },
         "ScriptComponent": {
           "script": "Rotator"
@@ -194,6 +216,82 @@
         }
       },
       "id": 3
+    },
+    {
+      "components": {
+        "GlobalTransform": {
+          "worldMatrix": [
+            [
+              1.0,
+              0.0,
+              0.0,
+              0.0
+            ],
+            [
+              0.0,
+              1.0,
+              0.0,
+              0.0
+            ],
+            [
+              0.0,
+              0.0,
+              1.0,
+              0.0
+            ],
+            [
+              0.0,
+              0.0,
+              0.0,
+              1.0
+            ]
+          ]
+        },
+        "MaterialComponent": {
+          "ambient": 0.10000000149011612,
+          "baseColor": {
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
+          },
+          "shininess": 32.0,
+          "specular": 0.5,
+          "texture": "",
+          "useTexture": false
+        },
+        "MeshComponent": {
+          "mesh": "",
+          "size": {
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
+          },
+          "sphereData": {
+            "x": 1.0,
+            "y": 16.0,
+            "z": 32.0
+          },
+          "type": "Sphere"
+        },
+        "TransformComponent": {
+          "position": {
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
+          },
+          "rotation": {
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
+          },
+          "scale": {
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
+          }
+        }
+      },
+      "id": 4
     }
   ]
 }

@@ -1,7 +1,6 @@
 #include "engine/engine.hpp"
-#include "engine/components/components.hpp"
-#include "engine/systems/systems.hpp"
-
+#include "engine/engineContext.hpp"
+#include <iostream>
 namespace engine {
 
 Engine::Engine() {}
@@ -13,22 +12,24 @@ void Engine::init(int width, int height, const char *title) {
     std::cerr << "SDL_Init Error: " << SDL_GetError() << "\n";
     exit(1);
   }
+
+  context = new EngineContext();
   _world = World();
   renderer = new Renderer(width, height, title);
-  controller = new Controller();
+  controller = new Controller(); 
   inputManager = InputManager();
-
+  context->controller = controller;
  
-  _world.registerDefaults(); 
+  _world.registerDefaults();
 
   _world.addSystem(std::make_shared<RenderSystem>(renderer));
   _world.addSystem(std::make_shared<ScriptSystem>());
   CameraControllerSystem cameraControllerSystem{controller};
   _world.addSystem(
-    std::make_shared<CameraControllerSystem>(cameraControllerSystem));
+      std::make_shared<CameraControllerSystem>(cameraControllerSystem));
   _world.addSystem(std::make_shared<HierarchySystem>());
- 
-  
+
+  _world.setContext(context);
 
   std::cout << "Engine initialized\n";
 }
@@ -63,7 +64,10 @@ void Engine::shutdown() {
   delete controller;
   controller = nullptr;
   delete renderer;
-  renderer = nullptr;
+  renderer = nullptr; 
+  delete context;
+  context = nullptr;
+
   SDL_Quit();
 }
 } // namespace engine

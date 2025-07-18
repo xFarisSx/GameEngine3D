@@ -19,7 +19,11 @@ struct Mesh {
   std::string path;
   std::string type;
 
-  static std::shared_ptr<Mesh> createCube();
+  Vec3 size{1};
+  Vec3 sphereData{1.0, 16.0, 32.0};
+
+  static std::shared_ptr<Mesh> createBox(float width, float height, float depth);
+  static std::shared_ptr<Mesh> createSphere(float radius, int latSegments, int lonSegments);
   static std::shared_ptr<Mesh> loadFromObj(const std::string &filename);
 };
 } // namespace engine

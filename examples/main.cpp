@@ -1,17 +1,29 @@
+
 #include <engine/engine.hpp>
 #include <iostream>
+
 using namespace engine;
 
 class Rotator : public Script {
-  TransformComponent *transform;
+  TransformComponent *transform = nullptr;
+  EngineContext *ctx = nullptr;
 
 public:
   Rotator() : Script("Rotator") {}
 
-  void start() override { transform = &getComponent<TransformComponent>(); }
-  void update(float dt) override { transform->rotation.y += dt; }
-};
+  void start() override {
+    GameObject obj = getGameObject();
+    transform = &obj.getComponent<TransformComponent>();
+    ctx = world->getContext();
+  }
 
+  void update(float dt) override {
+    if (ctx && ctx->controller->isKeyPressed(Key::Escape)) {
+      transform->rotation.y += dt;
+    }
+  }
+};
+//
 // int main() {
 //   Engine engine;
 //   engine.init(1600, 900, "My Game");
@@ -19,46 +31,47 @@ public:
 //   auto &world = engine.world();
 //   world.registerScript<Rotator>("Rotator");
 //
-//   Entity someObj = world.createEntity();
-//   world.addComponent<TransformComponent>(
-//       someObj, {Vec3(4, 2, 1), Vec3(0.0f), Vec3(1.0f)});
-//   world.addComponent<MeshComponent>(someObj, {Mesh::createCube()});
-//   MaterialComponent mat1{};
-//   mat1.useTexture = false;
-//   world.addComponent<MaterialComponent>(someObj, mat1);
+//   // Box object
+//   GameObject box(world);
+//   box.getComponent<TransformComponent>().position = Vec3(4, 2, 1);
+//   box.setMesh(Mesh::createBox(1.0, 2.0, 1.0));
 //
-//   Entity cam = world.createEntity();
-//   world.addComponent<TransformComponent>(
-//       cam, {Vec3(0, 0, -5), Vec3(0.0f), Vec3(100.0f)});
+//   MaterialComponent boxMaterial;
+//   boxMaterial.useTexture = false;
+//   box.setMaterial(boxMaterial);
 //
-//   world.addComponent<CameraComponent>(cam, {M_PI / 2, 16.f
-//   / 9.f, 1.0f, 30.f});
-//   world.addComponent<CameraControllerComponent>(cam);
-//   world.setCameraEntity(cam);
+//   // Camera object
+//   GameObject camera(world);
+//   auto &camTransform = camera.getComponent<TransformComponent>();
+//   camTransform.position = Vec3(0, 0, -5);
+//   camTransform.scale = Vec3(100.0f);
 //
-//   Entity model = world.createEntity();
-//   world.addComponent<TransformComponent>(model,
-//                                          {Vec3(0), Vec3(0), Vec3(0.01f)});
-//   world.addComponent<MeshComponent>(
-//       model, {Mesh::loadFromObj("assets/models/cat.obj")});
+//   camera.addComponent(CameraComponent{M_PI / 2, 16.f / 9.f, 1.0f, 30.f});
+//   camera.addComponent(CameraControllerComponent{});
+//   world.setCameraEntity(camera.getEntity());
 //
-//   auto tex = Texture::loadFromBmp("assets/textures/textcat1.bmp");
-//   MaterialComponent mat{};
-//   mat.texture = tex;
-//   mat.useTexture = true;
-//   world.addComponent<MaterialComponent>(model, mat);
+//   // 3D Model object
+//   GameObject model(world);
+//   model.getComponent<TransformComponent>().scale = Vec3(0.01f);
+//   model.setMesh(Mesh::loadFromObj("assets/models/cat.obj"));
 //
-//   world.addScript(model, std::make_shared<Rotator>());
+//   MaterialComponent modelMat;
+//   modelMat.texture = Texture::loadFromBmp("assets/textures/textcat1.bmp");
+//   modelMat.useTexture = true;
+//   model.setMaterial(modelMat);
+//   model.addScript(std::make_shared<Rotator>());
 //
-//   //world.setParent(cam, model);
-//    
+//   // Sphere object
+//   GameObject sphere(world);
+//   sphere.setMesh(Mesh::createSphere(1, 16, 32));
+//   sphere.setMaterial(MaterialComponent{});
 //
+//   // Save scene
 //   world.saveScene("scenes/test.json");
 //
 //   engine.run();
 //   engine.shutdown();
 // }
-
 int main() {
   Engine engine;
   engine.init(1600, 900, "My Game");

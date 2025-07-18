@@ -134,7 +134,7 @@ void Renderer::drawTriangle(const Mesh *mesh, const Triangle &tri,
 
   Vec3 normal = (v1 - v0).cross(v2 - v0);
   Vec3 normalViewSpace = (globalMat * Vec4(normal, 0.0f)).toVec3().normalized();
-  if (normalViewSpace.dot(forward) > 0) {
+  if (normalViewSpace.dot(forward) > 0.2) {
     return;
   }
 

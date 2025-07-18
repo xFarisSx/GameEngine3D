@@ -115,6 +115,10 @@ void World::saveScene(const std::string &filepath) {
 void World::loadScene(const std::string &filepath) {
   Serializer::loadScene(*this, filepath);
 }
+void World::setContext(EngineContext* _context){
+  context=_context;
+}  
+EngineContext* World::getContext() const { return context; }
 
 void World::registerDefaults() {
 
@@ -184,14 +188,27 @@ void World::registerDefaults() {
       "MeshComponent",
       [](World &world, Entity e) -> json {
         const auto &comp = world.getComponent<MeshComponent>(e);
-        return {{"mesh", comp.mesh ? comp.mesh->path : ""}};
+        return {{"mesh", comp.mesh ? comp.mesh->path : ""},
+                {"type", comp.mesh ? comp.mesh->type : "None"},
+                {"size", comp.mesh ? comp.mesh->size : Vec3(1)},
+                {"sphereData", comp.mesh ? comp.mesh->sphereData: Vec3{1, 16, 32}}
+                };
       },
       [](World &world, Entity e, const json &j) {
         MeshComponent comp;
-        std::string path = j.at("mesh").get<std::string>();
+        std::string path = j.value("mesh", "");
+        std::string typeStr = j.value("type", "None");
+        Vec3 size = j.value("size", Vec3(1));
+      Vec3 sd = j.value("sphereData", Vec3(1));
+
+        
+      if(typeStr == "Obj")
         comp.mesh = Mesh::loadFromObj(path);
+      else if (typeStr =="Box") comp.mesh = Mesh::createBox(size[0], size[1], size[2]);
+      else if (typeStr =="Sphere") comp.mesh = Mesh::createSphere(sd[0], sd[1], sd[2]);
+
         world.addComponent<MeshComponent>(e, comp);
-      });
+      }); 
 
   registerComponent<MaterialComponent>(
       "MaterialComponent",

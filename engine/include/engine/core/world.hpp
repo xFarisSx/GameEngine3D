@@ -10,6 +10,7 @@
 #include "engine/ecs/component.hpp"
 #include "engine/ecs/system.hpp"
 #include "engine/script/scriptRegistry.hpp"
+#include "engine/engineContext.hpp"
  
 namespace engine {
 
@@ -36,6 +37,8 @@ public:
 
   void registerDefaults();
   void clearStorages();
+  void setContext(EngineContext* context);
+  EngineContext* getContext() const; 
  
   template <typename T>
   void registerComponent(
@@ -71,6 +74,7 @@ private:
   ComponentManager componentManager;
   SystemManager systemManager;
   ScriptRegistry scriptRegistry;
+  EngineContext* context;
 };
 
 template <typename T>
@@ -103,13 +107,27 @@ World::addComponent<TransformComponent>(Entity e,
   }
 }
 
+template <typename T> void World::addComponent(Entity entity) {
+  componentManager.getStorage<T>().add(entity, T{});
+}
+
+template <>
+inline void
+World::addComponent<TransformComponent>(Entity e) {
+  componentManager.getStorage<TransformComponent>().add(e, TransformComponent{});
+
+  if (!hasComponent<GlobalTransform>(e)) {
+    componentManager.getStorage<GlobalTransform>().add(
+        e, GlobalTransform{Mat4::identity()});
+  }
+}
+
+
 template <typename T> void World::removeComponent(Entity entity) {
   componentManager.getStorage<T>().remove(entity);
 }
 
-template <typename T> void World::addComponent(Entity entity) {
-  componentManager.getStorage<T>().add(entity, T{});
-}
+
 
 template <typename T> bool World::hasComponent(Entity entity) {
   return componentManager.getStorage<T>().has(entity);

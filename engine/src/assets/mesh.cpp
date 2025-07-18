@@ -8,56 +8,94 @@
 
 namespace engine {
 
-std::shared_ptr<Mesh> Mesh::createCube() {
+std::shared_ptr<Mesh> Mesh::createSphere(float radius, int latSegments,
+                                         int lonSegments) {
   auto mesh = std::make_shared<Mesh>();
+  mesh->sphereData = {radius, (float)latSegments, (float)lonSegments};
+  // Generate vertices
+  for (int lat = 0; lat <= latSegments; ++lat) {
+    float theta = lat * M_PI / latSegments; // [0, π]
+    float sinTheta = sin(theta);
+    float cosTheta = cos(theta);
 
-  // Define 8 cube vertices
-  mesh->vertices = {
-      Vec3(-1, -1, -1), // 0
-      Vec3(1, -1, -1),  // 1
-      Vec3(1, 1, -1),   // 2
-      Vec3(-1, 1, -1),  // 3
-      Vec3(-1, -1, 1),  // 4
-      Vec3(1, -1, 1),   // 5
-      Vec3(1, 1, 1),    // 6
-      Vec3(-1, 1, 1)    // 7
-  };
+    for (int lon = 0; lon <= lonSegments; ++lon) {
+      float phi = lon * 2.0f * M_PI / lonSegments; // [0, 2π]
+      float sinPhi = sin(phi);
+      float cosPhi = cos(phi);
 
-  // Define triangles with CCW winding for each face
-  mesh->triangles = {// Back face (z = -1)
-                     {2, 1, 0},
-                     {3, 2, 0},
+      float x = radius * sinTheta * cosPhi;
+      float y = radius * cosTheta;
+      float z = radius * sinTheta * sinPhi;
 
-                     // Front face (z = +1)
-                     {4, 5, 6},
-                     {4, 6, 7},
+      mesh->vertices.push_back(Vec3(x, y, z));
+    }
+  }
 
-                     // Left face (x = -1)
-                     {0, 4, 7},
-                     {0, 7, 3},
+  for (int lat = 0; lat < latSegments; ++lat) {
+    for (int lon = 0; lon < lonSegments; ++lon) {
+      int current = lat * (lonSegments + 1) + lon;
+      int next = current + lonSegments + 1;
 
-                     // Right face (x = +1)
-                     {6, 5, 1},
-                     {6, 1, 2},
+      // Reversed order:
+      mesh->triangles.push_back({current, current + 1, next});
+      mesh->triangles.push_back({next + 1, next, current + 1});
+    }
+  }
 
-                     // Top face (y = +1)
-                     {3, 7, 6},
-                     {3, 6, 2},
-
-                     // Bottom face (y = -1)
-                     {0, 1, 5},
-                     {0, 5, 4}};
-
-  // Dummy UVs (all zeros, you can replace these with actual UVs)
-  mesh->textureMap.resize(mesh->vertices.size(), Vec3(0, 0, 0));
+  mesh->type = "Sphere";
+  mesh->textureMap.resize(mesh->vertices.size(), Vec3(0)); // dummy UV
 
   return mesh;
 }
+std::shared_ptr<Mesh> Mesh::createBox(float width, float height, float depth) {
+  auto mesh = std::make_shared<Mesh>();
+  mesh->type = "Box";
 
+  mesh->size = {width, height, depth};
+
+  float w = width / 2.0f;
+  float h = height / 2.0f;
+  float d = depth / 2.0f;
+
+  mesh->vertices = {
+      Vec3(-w, -h, -d), // 0
+      Vec3(w, -h, -d),  // 1
+      Vec3(w, h, -d),   // 2
+      Vec3(-w, h, -d),  // 3
+      Vec3(-w, -h, d),  // 4
+      Vec3(w, -h, d),   // 5
+      Vec3(w, h, d),    // 6
+      Vec3(-w, h, d)    // 7
+  };
+
+  mesh->triangles = {// Back face
+                     {2, 1, 0},
+                     {3, 2, 0},
+                     // Front face
+                     {4, 5, 6},
+                     {4, 6, 7},
+                     // Left face
+                     {0, 4, 7},
+                     {0, 7, 3},
+                     // Right face
+                     {6, 5, 1},
+                     {6, 1, 2},
+                     // Top face
+                     {3, 7, 6},
+                     {3, 6, 2},
+                     // Bottom face
+                     {0, 1, 5},
+                     {0, 5, 4}};
+
+  mesh->textureMap.resize(mesh->vertices.size(), Vec3(0.0f, 0.0f, 0.0f));
+
+  return mesh;
+}
 std::shared_ptr<Mesh> Mesh::loadFromObj(const std::string &filename) {
   auto mesh = std::make_shared<Mesh>();
   mesh->path = filename;
   std::ifstream file(filename);
+  mesh->type = "Obj";
 
   if (!file.is_open()) {
     return mesh;
