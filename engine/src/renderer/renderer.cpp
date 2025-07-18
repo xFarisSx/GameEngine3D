@@ -75,26 +75,18 @@ void Renderer::present() {
   SDL_RenderPresent(sdlRenderer);
 }
 
+
 Vec3 Renderer::project(const Vec4 &point, const Mat4 &globalMat,
-                       const TransformComponent &cameraTransform,
-                       const CameraComponent &camera) const {
-  Vec3 forward, right, up;
-  math::updateCameraBasis(cameraTransform.rotation, forward, right, up);
-
-  Mat4 viewM = Mat4::lookAt(cameraTransform.position,
-                            cameraTransform.position + forward, Vec3(0, 1, 0));
-  Mat4 perspM = Mat4::perspective(camera.fov, camera.aspectRatio,
-                                  camera.nearPlane, camera.farPlane);
-
+                       const Mat4 &viewM, const Mat4 &perspM) const {
   Vec4 projected4 = perspM * viewM * globalMat * point;
-
+ 
   if (projected4.w <= 0.0f)
     return Vec3(-1, -1, -1);
-  Vec3 pr = projected4.toVec3();
 
-  return Vec3(screenWidth * (pr.x + 1) / 2, screenHeight * (1 - pr.y) / 2,
-              pr.z);
+  Vec3 pr = projected4.toVec3();
+  return Vec3(screenWidth * (pr.x + 1) / 2, screenHeight * (1 - pr.y) / 2, pr.z);
 }
+
 
 void Renderer::drawPixel(int x, int y, float z, uint32_t color) {
   if (x >= 0 && x < screenWidth && y >= 0 && y < screenHeight) {
@@ -128,25 +120,35 @@ void Renderer::drawTriangle(const Mesh *mesh, const Triangle &tri,
   Vec3 v0 = vertices[tri.i0];
   Vec3 v1 = vertices[tri.i1];
   Vec3 v2 = vertices[tri.i2];
-
-  Vec3 forward, right, up;
-  math::updateCameraBasis(cameraTransform.rotation, forward, right, up);
-
-  Vec3 normal = (v1 - v0).cross(v2 - v0);
-  Vec3 normalViewSpace = (globalMat * Vec4(normal, 0.0f)).toVec3().normalized();
-  if (normalViewSpace.dot(forward) > 0.2) {
-    return;
-  }
-
   Vec4 v04 = Vec4(v0.x, v0.y, v0.z, 1);
   Vec4 v14 = Vec4(v1.x, v1.y, v1.z, 1);
   Vec4 v24 = Vec4(v2.x, v2.y, v2.z, 1);
 
-  Vec3 p0 = project(v04, globalMat, cameraTransform, camera);
 
-  Vec3 p1 = project(v14, globalMat, cameraTransform, camera);
+  Vec3 forward, right, up;
+  math::updateCameraBasis(cameraTransform.rotation, forward, right, up);
 
-  Vec3 p2 = project(v24, globalMat, cameraTransform, camera);
+  Mat4 viewM = Mat4::lookAt(cameraTransform.position,
+                            cameraTransform.position + forward, Vec3(0, 1, 0));
+  Mat4 perspM = Mat4::perspective(camera.fov, camera.aspectRatio,
+                                  camera.nearPlane, camera.farPlane);
+
+
+
+  Vec3 normal = (v1 - v0).cross(v2 - v0);
+
+
+  Vec3 normalWorld = (globalMat * Vec4(normal, 0.0f)).toVec3().normalized();
+
+
+  if (normalWorld.dot(forward) > 0.2f) {
+    return;
+  }
+
+
+  Vec3 p0 = project(v04, globalMat, viewM, perspM);
+  Vec3 p1 = project(v14, globalMat, viewM, perspM);
+  Vec3 p2 = project(v24, globalMat, viewM, perspM);
 
   if (p0.z < 0.0f || p0.z > 1.0f || p0.x < 0 || p0.x >= screenWidth ||
       p0.y < 0 || p0.y >= screenHeight)
@@ -185,6 +187,8 @@ void Renderer::drawTriangle(const Mesh *mesh, const Triangle &tri,
   if (std::abs(area) < 1e-6f) {
     return;
   }
+
+  Vec3 lightDirViewSpace = (viewM * Vec4(lightDir, 0.0f)).toVec3().normalized();
   for (int y = minYInt; y <= maxYInt; ++y) {
     for (int x = minXInt; x <= maxXInt; ++x) {
       Vec3 c(x, y, 0);
@@ -221,29 +225,33 @@ void Renderer::drawTriangle(const Mesh *mesh, const Triangle &tri,
           finalColor = Vec3(r / 255.0f, g / 255.0f, b / 255.0f);
         }
 
-        Vec3 lightDirNormalized = lightDir.normalized();
-        Vec3 normalNormalized = normal.normalized();
 
-        float diffIntensity = std::max(
-            material.ambient, normalNormalized.dot(lightDirNormalized * -1));
+        Vec3 normalViewSpace = (viewM * Vec4(normalWorld, 0.0f)).toVec3().normalized();
+
+        // Ambient + diffuse lighting
+        float diffIntensity = std::max(material.ambient, normalViewSpace.dot(lightDirViewSpace*-1));
+
 
         Vec3 viewDir = (cameraTransform.position - worldPos).normalized();
-        Vec3 reflectDir = reflect(lightDirNormalized, normalNormalized);
 
-        float spec =
-            pow(std::max(0.0f, viewDir.dot(reflectDir)), material.shininess);
+        // Reflection direction for specular
+        Vec3 reflectDir = reflect(lightDirViewSpace*-1, normalViewSpace);
+
+        // Specular intensity
+        float spec = pow(std::max(0.0f, viewDir.dot(reflectDir)), material.shininess);
+
+        // Total light intensity combining ambient, diffuse, specular
         float totalLight = diffIntensity + material.specular * spec;
+
 
         Vec3 litColor = finalColor * totalLight;
 
-        Uint8 r =
-            static_cast<Uint8>(std::clamp(litColor.x * 255.0f, 0.0f, 255.0f));
-        Uint8 g =
-            static_cast<Uint8>(std::clamp(litColor.y * 255.0f, 0.0f, 255.0f));
-        Uint8 b =
-            static_cast<Uint8>(std::clamp(litColor.z * 255.0f, 0.0f, 255.0f));
+        Uint8 r = static_cast<Uint8>(std::clamp(litColor.x * 255.0f, 0.0f, 255.0f));
+        Uint8 g = static_cast<Uint8>(std::clamp(litColor.y * 255.0f, 0.0f, 255.0f));
+        Uint8 b = static_cast<Uint8>(std::clamp(litColor.z * 255.0f, 0.0f, 255.0f));
 
         Uint32 color = (r << 16) | (g << 8) | b;
+
         drawPixel(x, y, depth, color);
       }
     }

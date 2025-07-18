@@ -22,9 +22,8 @@ public:
   void clear(uint32_t color = 0xFF000000);
   void present();
 
-  Vec3 project(const Vec4 &point, const  Mat4 & globalMat,
-               const TransformComponent &cameraTransform,
-               const CameraComponent &camera) const;
+  Vec3 project(const Vec4 &point, const Mat4 &globalMat,
+                       const Mat4 &viewM, const Mat4 &perspM) const ;
 
   void drawPixel(int x, int y, float z, uint32_t color);
 
